@@ -1,5 +1,8 @@
 # 🔬 DenemeLab — Sınav ve Deneme Analizi
 
+> [!WARNING]
+> **Önemli Not:** Uygulama içerisindeki **Yapay Zeka Destekli Analiz** sistemi şu anda deneysel aşamada olup düzgün çalışmamaktadır / geliştirilme aşamasındadır. Deneme ve sınav analizlerinizi, soru kırpma ve net takiplerinizi sorunsuz gerçekleştirmek için lütfen **Manuel Analiz** modunu kullanınız.
+
 DenemeLab; TYT, AYT, LGS, ALES, KPSS ve MSÜ sınavlarına hazırlanan öğrenciler için tasarlanmış modern, çevrimdışı ve gelişmiş bir deneme analiz ve net takip platformudur.
 
 ---
