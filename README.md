@@ -1,14 +1,18 @@
-# 🔬 Deneme Lab — Sınav ve Deneme Analizi
+# 🔬 DenemeLab — Sınav ve Deneme Analizi
 
-Deneme Lab; TYT, AYT, LGS, ALES, KPSS ve MSÜ sınavlarına hazırlanan öğrenciler için tasarlanmış modern, çevrimdışı ve gelişmiş bir deneme analiz ve net takip platformudur.
+DenemeLab; TYT, AYT, LGS, ALES, KPSS ve MSÜ sınavlarına hazırlanan öğrenciler için tasarlanmış modern, çevrimdışı ve gelişmiş bir deneme analiz ve net takip platformudur.
 
 ---
 
 ## 🚀 Hızlı Başlangıç
 
-1. **`Deneme Lab Başlat.bat`** dosyasına çift tıklayın.
-2. Uygulama otomatik olarak yerel sunucuyla veya doğrudan varsayılan tarayıcınızda açılacaktır.
-3. Dilerseniz **`Masaüstüne Kısayol Oluştur.bat`** dosyasına tıklayarak masaüstünüze hızlı erişim simgesi ekleyebilirsiniz.
+### 🪟 Windows Kullanıcıları İçin:
+* **`DenemeLab_Baslat.bat`** dosyasına çift tıklayın. Uygulama otomatik olarak yerel sunucuyla varsayılan tarayıcınızda açılır.
+* Dilerseniz **`Masaüstüne Kısayol Oluştur.bat`** dosyasına tıklayarak masaüstünüze hızlı erişim simgesi ekleyebilirsiniz.
+
+### 🍎 Mac (macOS) Kullanıcıları İçin:
+* **`DenemeLab_Mac_Baslat.command`** dosyasına çift tıklayın. Tarayıcınızda otomatik olarak açılacaktır.
+* *(Alternatif olarak `app/index.html` dosyasına çift tıklayarak da doğrudan Safari veya Chrome ile açabilirsiniz)*
 
 ---
 
@@ -27,6 +31,6 @@ Deneme Lab; TYT, AYT, LGS, ALES, KPSS ve MSÜ sınavlarına hazırlanan öğrenc
 
 * **`app/`**: Uygulamanın tüm web motoru, arayüzü ve çalışma kodları.
 * **`belgeler/`**: Detaylı kullanım notları ve rehberler.
-* **`Deneme Lab Başlat.bat`**: Uygulama başlatıcı.
-* **`Masaüstüne Kısayol Oluştur.bat`**: Masaüstü simge oluşturucu.
-
+* **`DenemeLab_Baslat.bat`**: Windows için tek tıkla başlatıcı.
+* **`DenemeLab_Mac_Baslat.command`**: Mac (macOS) için tek tıkla başlatıcı.
+* **`Masaüstüne Kısayol Oluştur.bat`**: Windows masaüstü simge oluşturucu.
