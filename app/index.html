@@ -1,0 +1,2894 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deneme Lab — Sınav ve Deneme Analizi</title>
+    <meta name="description"
+        content="Yapay zeka destekli sınav analiz uygulaması. Test fotoğraflarınızı yükleyin, otomatik puanlama yapın, kişiselleştirilmiş çalışma raporları alın.">
+
+    <!-- Favicon (emoji) -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonts with display=swap -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- JSZip (for full ZIP export/import) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css?v=24">
+</head>
+
+<body>
+    <!-- ========== SIDEBAR ========== -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon material-icons-outlined">insights</span>
+                <span class="logo-text">Deneme <span class="logo-accent">Lab</span></span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" title="Menüyü Daralt">
+                <span class="material-icons-outlined">menu</span>
+            </button>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item active" data-page="dashboard">
+                <span class="material-icons-outlined">dashboard</span>
+                <span class="nav-label">Ana Sayfa</span>
+            </li>
+            <li class="nav-item" data-page="analysis" id="navManualAnalysis">
+                <span class="material-icons-outlined">content_cut</span>
+                <span class="nav-label">Deneme Analizi</span>
+            </li>
+            <li class="nav-item" data-page="ai-analysis" id="navAiAnalysis" style="display: none;">
+                <span class="material-icons-outlined">psychology</span>
+                <span class="nav-label">Yapay Zeka Analizi</span>
+                <span class="ai-badge">AI</span>
+            </li>
+            <li class="nav-item" data-page="results">
+                <span class="material-icons-outlined">assessment</span>
+                <span class="nav-label">Sonuçlar</span>
+            </li>
+            <li class="nav-item" data-page="report">
+                <span class="material-icons-outlined">description</span>
+                <span class="nav-label">Rapor</span>
+            </li>
+            <li class="nav-item" data-page="review">
+                <span class="material-icons-outlined">replay_circle_filled</span>
+                <span class="nav-label">Tekrar Havuzu</span>
+                <span class="nav-badge" id="reviewBadge">0</span>
+            </li>
+            <li class="nav-item" data-page="settings">
+                <span class="material-icons-outlined">settings</span>
+                <span class="nav-label">Ayarlar</span>
+            </li>
+            <li class="nav-item nav-tour-btn" id="navTourBtn" onclick="app.showWelcomeModal(true)"
+                title="Uygulama tanıtım rehberini aç">
+                <span class="material-icons-outlined" style="color:var(--color-accent,#8b5cf6);">help_outline</span>
+                <span class="nav-label">Tanıtım Rehberi</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ===== DASHBOARD ===== -->
+        <section class="page active" id="page-dashboard">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Ana Sayfa</h1>
+                    <p class="page-subtitle">Sınav durumunuz ve genel performans özeti</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="app.showWelcomeModal(true)">
+                        <span class="material-icons-outlined">help_outline</span>
+                        Tanıtım Turu
+                    </button>
+                    <button class="btn btn-primary" id="dashboardNewAnalysisBtn">
+                        <span class="material-icons-outlined">add_photo_alternate</span>
+                        Yeni Analiz
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card stat-card--purple">
+                    <div class="stat-icon"><span class="material-icons-outlined">quiz</span></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statTotalTests">0</span>
+                        <span class="stat-label">Toplam Test</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--green">
+                    <div class="stat-icon"><span class="material-icons-outlined">trending_up</span></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statSuccessRate">%0</span>
+                        <span class="stat-label">Başarı Oranı</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--blue">
+                    <div class="stat-icon"><span class="material-icons-outlined">check_circle</span></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statTotalQuestions">0</span>
+                        <span class="stat-label">Toplam Soru</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--orange">
+                    <div class="stat-icon"><span class="material-icons-outlined">replay</span></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="statReviewCount">0</span>
+                        <span class="stat-label">Tekrar Bekleyen</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--indigo stat-card-clickable" id="statCardAverageNet" role="button"
+                    tabindex="0" title="Sınav türüne göre ortalama neti filtrelemek için tıklayın"
+                    style="background:linear-gradient(135deg,rgba(99,102,241,0.12) 0%,rgba(168,85,247,0.12) 100%);border:1px solid rgba(99,102,241,0.25);cursor:pointer;position:relative;">
+                    <div class="stat-icon" style="background:rgba(99,102,241,0.2);color:#6366f1;"><span
+                            class="material-icons-outlined">analytics</span></div>
+                    <div class="stat-info" style="flex:1;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                            <span class="stat-value" id="statAverageNet">0.00</span>
+                            <span id="statAverageNetBadge" class="stat-badge" title="Filtrelenen Sınav Türü">Tümü</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:4px;">
+                            <span class="stat-label" id="statAverageNetLabel">Ortalama Net</span>
+                            <span class="material-icons-outlined" style="font-size:14px;color:var(--text-tertiary);"
+                                title="Sınavı Değiştir">tune</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card recent-analyses">
+                    <div class="card-header">
+                        <h2>Son Analizler</h2>
+                        <button class="btn btn-ghost" id="viewAllResultsBtn">Tümünü Gör</button>
+                    </div>
+                    <div class="card-body" id="recentAnalysesList">
+                        <div class="empty-state">
+                            <span class="material-icons-outlined">inbox</span>
+                            <p>Henüz bir analiz yapılmadı.</p>
+                            <button class="btn btn-primary btn-sm" onclick="app.navigateTo('analysis')">İlk Analizini
+                                Yap</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card weak-topics">
+                    <div class="card-header">
+                        <h2>Geliştirilmesi Gereken Konular</h2>
+                    </div>
+                    <div class="card-body" id="weakTopicsList">
+                        <div class="empty-state">
+                            <span class="material-icons-outlined">school</span>
+                            <p>Analizler yapıldıkça geliştirilmesi gereken konular burada listelenecektir.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== NET TAKİP VE BAŞARI GRAFİĞİ (FİLTRELİ) ===== -->
+            <div class="card net-chart-card">
+                <div class="card-header net-chart-header">
+                    <div class="net-chart-title-group">
+                        <span class="material-icons-outlined text-primary" style="font-size:32px;">insights</span>
+                        <div>
+                            <h2>Net Takip ve Gelişim Grafiği 📈</h2>
+                            <p class="card-subtitle">Sınavlarınızdaki net artışını alan ve ders bazında filtreleyerek
+                                inceleyin</p>
+                        </div>
+                    </div>
+                    <div class="net-chart-filters">
+                        <!-- Alan Filtresi -->
+                        <div class="chart-filter-item">
+                            <span class="filter-label">Alan:</span>
+                            <select id="netChartExamFilter" class="filter-select-sm">
+                                <option value="all">Tüm Alanlar</option>
+                                <option value="TYT">TYT</option>
+                                <option value="AYT">AYT (Tümü)</option>
+                                <option value="AYT-SAYISAL">AYT - Sayısal</option>
+                                <option value="AYT-EA">AYT - Eşit Ağırlık</option>
+                                <option value="AYT-SÖZEL">AYT - Sözel</option>
+                                <option value="ALES">ALES</option>
+                                <option value="KPSS">KPSS</option>
+                                <option value="LGS">LGS</option>
+                                <option value="YDT">YDT</option>
+                                <option value="DGS">DGS</option>
+                                <option value="MSÜ">MSÜ</option>
+                                <option value="Genel">Genel</option>
+                            </select>
+                        </div>
+                        <!-- Ders Filtresi -->
+                        <div class="chart-filter-item">
+                            <span class="filter-label">Ders:</span>
+                            <select id="netChartSubjectFilter" class="filter-select-sm">
+                                <option value="all">Tüm Dersler (Toplam Net)</option>
+                            </select>
+                        </div>
+                        <!-- Gösterim Limiti -->
+                        <div class="chart-filter-item">
+                            <span class="filter-label">Gösterim:</span>
+                            <select id="netChartLimitFilter" class="filter-select-sm">
+                                <option value="all">Tüm Denemeler</option>
+                                <option value="5">Son 5 Deneme</option>
+                                <option value="10">Son 10 Deneme</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Net Summary Strip -->
+                <div class="net-summary-strip" id="netChartSummaryStrip">
+                    <div class="net-summary-item">
+                        <span class="net-summary-label">Son Net</span>
+                        <span class="net-summary-val" id="netSummaryLast">—</span>
+                    </div>
+                    <div class="net-summary-item">
+                        <span class="net-summary-label">En Yüksek Net</span>
+                        <span class="net-summary-val text-correct" id="netSummaryMax">—</span>
+                    </div>
+                    <div class="net-summary-item">
+                        <span class="net-summary-label">Ortalama Net</span>
+                        <span class="net-summary-val text-primary" id="netSummaryAvg">—</span>
+                    </div>
+                    <div class="net-summary-item">
+                        <span class="net-summary-label">Net Değişimi</span>
+                        <span class="net-summary-val" id="netSummaryTrend">—</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <canvas id="netPerformanceChart" width="800" height="260"></canvas>
+                </div>
+            </div>
+
+            <!-- ===== DERS BAZINDA ORTALAMA BAŞARI VE NETLER TABLOSU ===== -->
+            <div class="card subject-averages-card" style="margin-top:24px;">
+                <div class="card-header subject-averages-header"
+                    style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:18px 24px;">
+                    <div class="subject-averages-title-group" style="display:flex;align-items:center;gap:10px;">
+                        <span class="material-icons-outlined text-primary" style="font-size:28px;">table_chart</span>
+                        <div>
+                            <h2 style="font-size:1.15rem;margin:0;color:var(--text-primary);">Ders Bazında Ortalama
+                                Başarı ve Netler 📊</h2>
+                            <p class="card-subtitle"
+                                style="margin:3px 0 0 0;font-size:0.85rem;color:var(--text-secondary);">Sınavlarınızdaki
+                                derslerin ortalama soru sayısı, doğru, yanlış, boş ve net durumları</p>
+                        </div>
+                    </div>
+                    <div class="subject-averages-filters" style="display:flex;align-items:center;gap:8px;">
+                        <span class="filter-label"
+                            style="font-size:0.85rem;color:var(--text-secondary);font-weight:600;">Sınav
+                            Filtresi:</span>
+                        <select id="dashboardSubjectAvgExamFilter" class="filter-select-sm" style="min-width:140px;">
+                            <option value="all">Tüm Sınavlar</option>
+                            <option value="TYT">TYT</option>
+                            <option value="AYT">AYT (Tümü)</option>
+                            <option value="AYT-SAYISAL">AYT - Sayısal</option>
+                            <option value="AYT-EA">AYT - Eşit Ağırlık</option>
+                            <option value="AYT-SÖZEL">AYT - Sözel</option>
+                            <option value="ALES">ALES</option>
+                            <option value="KPSS">KPSS</option>
+                            <option value="LGS">LGS</option>
+                            <option value="YDT">YDT</option>
+                            <option value="DGS">DGS</option>
+                            <option value="MSÜ">MSÜ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:12px 20px 20px 20px;">
+                    <div class="table-responsive" style="overflow-x:auto;">
+                        <table class="table subject-averages-table" id="dashboardSubjectAveragesTable"
+                            style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr
+                                    style="border-bottom:1px solid var(--border-color);font-size:12px;color:var(--text-secondary);">
+                                    <th style="padding:12px 10px;text-align:left;min-width:140px;">Ders</th>
+                                    <th style="padding:12px 10px;text-align:center;width:95px;"
+                                        title="Ortalama toplam soru sayısı">Ort. Soru</th>
+                                    <th
+                                        style="padding:12px 10px;text-align:center;width:95px;color:var(--color-correct);font-weight:700;">
+                                        Ort. Doğru</th>
+                                    <th
+                                        style="padding:12px 10px;text-align:center;width:95px;color:var(--color-wrong);font-weight:700;">
+                                        Ort. Yanlış</th>
+                                    <th
+                                        style="padding:12px 10px;text-align:center;width:90px;color:var(--color-blank);font-weight:700;">
+                                        Ort. Boş</th>
+                                    <th
+                                        style="padding:12px 10px;text-align:center;width:90px;color:var(--text-tertiary);">
+                                        Ort. İptal</th>
+                                    <th
+                                        style="padding:12px 10px;text-align:center;width:110px;color:var(--primary-color);font-weight:700;">
+                                        Ortalama Net</th>
+                                    <th style="padding:12px 10px;text-align:center;width:150px;">Başarı Oranı</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardSubjectAveragesBody">
+                                <!-- Dynamically rendered -->
+                            </tbody>
+                            <tfoot id="dashboardSubjectAveragesFoot">
+                                <!-- Overall totals / averages -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Genel Başarı Puanı Grafiği -->
+            <div class="card performance-chart-card">
+                <div class="card-header">
+                    <h2>Genel Başarı Yüzdesi Grafiği (%)</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" width="800" height="230"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== ANALYSIS ===== -->
+        <!-- ===== NORMAL / MANUAL QUESTION ANALYSIS ===== -->
+        <section class="page" id="page-analysis">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Soru Kesme ve Analiz ✂️</h1>
+                    <p class="page-subtitle">Test fotoğraflarınızı veya PDF belgelerinizi yükleyin, soruları kırpın ve
+                        detaylı hata analizi yapın.</p>
+                </div>
+            </div>
+
+            <div class="manual-analysis-container">
+                <!-- STAGE 1: UPLOAD -->
+                <div class="manual-stage" id="manualStage_upload">
+                    <div class="upload-zone" id="manualUploadZone">
+                        <div class="upload-zone-content" id="manualUploadContent">
+                            <div class="upload-icon-wrapper">
+                                <span class="material-icons-outlined">add_photo_alternate</span>
+                            </div>
+                            <h3>Test Fotoğrafı veya PDF Belgesi Yükleyin</h3>
+                            <p>Dosyaları buraya sürükleyin veya seçmek için tıklayın</p>
+                            <div class="upload-formats">
+                                <span class="format-badge">JPG</span>
+                                <span class="format-badge">PNG</span>
+                                <span class="format-badge">PDF</span>
+                                <span class="format-badge">WEBP</span>
+                            </div>
+                            <input type="file" id="manualFileInput" accept="image/*,.pdf" multiple hidden>
+                        </div>
+                        <div class="upload-progress-box hidden" id="manualUploadProgress">
+                            <div class="ai-loader">
+                                <div class="ai-loader-ring"></div>
+                                <span class="material-icons-outlined">hourglass_top</span>
+                            </div>
+                            <h4 id="manualUploadText">Dosyalar işleniyor...</h4>
+                            <div class="progress-bar-container" style="max-width:300px;margin:12px auto 0;">
+                                <div class="progress-bar" id="manualUploadBar" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Uploaded Pages Preview -->
+                    <div class="preview-area hidden" id="manualPreviewArea">
+                        <div class="preview-header">
+                            <h3><span class="material-icons-outlined">auto_stories</span> <span
+                                    id="manualTotalPagesCount">0 Sayfa</span></h3>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <button class="btn btn-ghost btn-sm" id="manualClearFilesBtn">
+                                    <span class="material-icons-outlined">delete_sweep</span> Temizle
+                                </button>
+                                <button class="btn btn-ghost btn-icon btn-stage-close"
+                                    onclick="manualAnalyzer.closeAnalysis()" title="Kapat">
+                                    <span class="material-icons-outlined">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="manual-pages-grid" id="manualFilesGrid"></div>
+
+                        <!-- Sınav Alanı Seçimi (Dosya Seçiminden Sonra İlk Adım) -->
+                        <div class="exam-select-box card" id="manualExamSelectSection"
+                            style="margin:16px 0;padding:20px;background:var(--bg-card);border:2px solid var(--border-color);border-radius:14px;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                                <div
+                                    style="width:38px;height:38px;border-radius:10px;background:rgba(124,92,252,0.15);color:var(--primary-color);display:flex;align-items:center;justify-content:center;">
+                                    <span class="material-icons-outlined">school</span>
+                                </div>
+                                <div>
+                                    <h4
+                                        style="margin:0;font-size:16px;color:var(--text-primary);display:flex;align-items:center;gap:8px;">
+                                        Sınav Alanını Seçin 🎯
+                                        <span class="badge badge-primary" id="selectedExamBadge">TYT</span>
+                                    </h4>
+                                    <p style="margin:2px 0 0;font-size:13px;color:var(--text-secondary);">Sorular ve
+                                        dersler seçtiğiniz alana göre otomatik olarak yapılandırılacaktır.</p>
+                                </div>
+                            </div>
+                            <div class="exam-cards-grid" id="examSelectionGrid">
+                                <button type="button" class="exam-card active" data-exam="TYT"
+                                    onclick="manualAnalyzer.setExamType('TYT')">
+                                    <span class="exam-card-title">TYT</span>
+                                    <span class="exam-card-sub">Temel Yeterlilik</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="AYT"
+                                    onclick="manualAnalyzer.setExamType('AYT')">
+                                    <span class="exam-card-title">AYT</span>
+                                    <span class="exam-card-sub">Alan Yeterlilik</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="ALES"
+                                    onclick="manualAnalyzer.setExamType('ALES')">
+                                    <span class="exam-card-title">ALES</span>
+                                    <span class="exam-card-sub">Lisansüstü Giriş</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="KPSS"
+                                    onclick="manualAnalyzer.setExamType('KPSS')">
+                                    <span class="exam-card-title">KPSS</span>
+                                    <span class="exam-card-sub">Kamu Personeli</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="LGS"
+                                    onclick="manualAnalyzer.setExamType('LGS')">
+                                    <span class="exam-card-title">LGS</span>
+                                    <span class="exam-card-sub">Liselere Giriş</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="YDT"
+                                    onclick="manualAnalyzer.setExamType('YDT')">
+                                    <span class="exam-card-title">YDT</span>
+                                    <span class="exam-card-sub">Yabancı Dil</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="DGS"
+                                    onclick="manualAnalyzer.setExamType('DGS')">
+                                    <span class="exam-card-title">DGS</span>
+                                    <span class="exam-card-sub">Dikey Geçiş</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="MSÜ"
+                                    onclick="manualAnalyzer.setExamType('MSÜ')">
+                                    <span class="exam-card-title">MSÜ</span>
+                                    <span class="exam-card-sub">Milli Savunma</span>
+                                </button>
+                                <button type="button" class="exam-card" data-exam="Genel"
+                                    onclick="manualAnalyzer.setExamType('Genel')">
+                                    <span class="exam-card-title">Genel</span>
+                                    <span class="exam-card-sub">Özel Deneme</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- AYT Alt Alan Seçimi -->
+                        <div class="ayt-subfield-section" id="aytSubfieldSection" style="display:none;">
+                            <div class="ayt-subfield-header">
+                                <div class="ayt-subfield-title">
+                                    <span class="material-icons-outlined">category</span>
+                                    <span>AYT Alan Türü (Puan Türü)</span>
+                                </div>
+                                <span class="ayt-subfield-tag">Ders Filtresi</span>
+                            </div>
+                            <div class="ayt-subfield-grid">
+                                <button type="button" class="ayt-subfield-card active" data-subfield="SAYISAL"
+                                    onclick="manualAnalyzer.setAYTSubfield('SAYISAL')">
+                                    <div class="ayt-card-icon">
+                                        <span class="material-icons-outlined">calculate</span>
+                                    </div>
+                                    <div class="ayt-card-body">
+                                        <div class="ayt-card-name">
+                                            <span>Sayısal (SAY)</span>
+                                        </div>
+                                        <div class="ayt-card-desc">Matematik & Fen Bilimleri (80 Soru)</div>
+                                    </div>
+                                    <span class="material-icons-outlined ayt-card-badge">check_circle</span>
+                                </button>
+                                <button type="button" class="ayt-subfield-card" data-subfield="EA"
+                                    onclick="manualAnalyzer.setAYTSubfield('EA')">
+                                    <div class="ayt-card-icon">
+                                        <span class="material-icons-outlined">balance</span>
+                                    </div>
+                                    <div class="ayt-card-body">
+                                        <div class="ayt-card-name">
+                                            <span>Eşit Ağırlık (EA)</span>
+                                        </div>
+                                        <div class="ayt-card-desc">Edebiyat-Sosyal-1 & Matematik (80 Soru)</div>
+                                    </div>
+                                    <span class="material-icons-outlined ayt-card-badge">check_circle</span>
+                                </button>
+                                <button type="button" class="ayt-subfield-card" data-subfield="SÖZEL"
+                                    onclick="manualAnalyzer.setAYTSubfield('SÖZEL')">
+                                    <div class="ayt-card-icon">
+                                        <span class="material-icons-outlined">menu_book</span>
+                                    </div>
+                                    <div class="ayt-card-body">
+                                        <div class="ayt-card-name">
+                                            <span>Sözel (SÖZ)</span>
+                                        </div>
+                                        <div class="ayt-card-desc">Edebiyat-Sos-1 & Sosyal-2 (80 Soru)</div>
+                                    </div>
+                                    <span class="material-icons-outlined ayt-card-badge">check_circle</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="manual-options-bar">
+                            <div class="form-group" style="flex:1;min-width:240px;">
+                                <label for="manualTestTitleInput">Test / Deneme Adı</label>
+                                <input type="text" id="manualTestTitleInput" placeholder="Örn: TYT Matematik Deneme 3">
+                            </div>
+                        </div>
+                        <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+                            <button class="btn btn-primary btn-lg" id="manualStartCropBtn">
+                                <span class="material-icons-outlined">content_cut</span>
+                                Soruları Kırpmaya Başla ✂️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 2: QUESTION SELECTION / CROP -->
+                <div class="manual-stage hidden" id="manualStage_crop">
+                    <!-- Crop Toolbar -->
+                    <div class="crop-toolbar">
+                        <div class="crop-toolbar-left">
+                            <button class="btn btn-ghost btn-sm" id="manualBackToUploadBtn">
+                                <span class="material-icons-outlined">arrow_back</span> Dosyalar
+                            </button>
+                            <div class="page-nav-controls">
+                                <button class="btn btn-ghost btn-icon btn-sm" id="cropPrevPageBtn" title="Önceki Sayfa">
+                                    <span class="material-icons-outlined">chevron_left</span>
+                                </button>
+                                <span class="page-indicator" id="cropPageIndicator">Sayfa 1 / 1</span>
+                                <button class="btn btn-ghost btn-icon btn-sm" id="cropNextPageBtn"
+                                    title="Sonraki Sayfa">
+                                    <span class="material-icons-outlined">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="crop-toolbar-center">
+                            <div class="zoom-controls">
+                                <button class="btn btn-ghost btn-icon btn-sm" id="cropZoomOutBtn" title="Küçült">
+                                    <span class="material-icons-outlined">zoom_out</span>
+                                </button>
+                                <span id="cropZoomValue">100%</span>
+                                <button class="btn btn-ghost btn-icon btn-sm" id="cropZoomInBtn" title="Büyüt">
+                                    <span class="material-icons-outlined">zoom_in</span>
+                                </button>
+                                <button class="btn btn-ghost btn-icon btn-sm" id="cropZoomResetBtn" title="Sıfırla">
+                                    <span class="material-icons-outlined">restart_alt</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="cropAddFullPageBtn">
+                                <span class="material-icons-outlined">crop_free</span> Tüm Sayfayı Soru Olarak Seç
+                            </button>
+                        </div>
+
+                        <div class="crop-toolbar-right">
+                            <button class="btn btn-primary btn-sm" id="manualFinishCropBtn" disabled>
+                                <span>Soru Bilgilerini Gir (0)</span>
+                                <span class="material-icons-outlined">arrow_forward</span>
+                            </button>
+                            <button class="btn btn-ghost btn-icon btn-stage-close"
+                                onclick="manualAnalyzer.closeAnalysis()" title="Kapat">
+                                <span class="material-icons-outlined">close</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Crop Workspace Grid -->
+                    <div class="crop-workspace-layout">
+                        <!-- Main Canvas Area -->
+                        <div class="crop-canvas-outer" id="cropCanvasOuter">
+                            <div class="crop-canvas-viewport" id="cropCanvasViewport">
+                                <canvas id="cropBgCanvas"></canvas>
+                                <canvas id="cropOverlayCanvas"></canvas>
+                            </div>
+
+                            <!-- Floating Crop Confirmation Popover -->
+                            <div class="crop-confirm-popup hidden" id="cropConfirmPopup">
+                                <button class="btn btn-primary btn-sm" id="cropConfirmAddBtn">
+                                    <span class="material-icons-outlined">content_cut</span> Soruyu Ekle
+                                </button>
+                                <button class="btn btn-success btn-sm" id="cropAddSharedStemBtn"
+                                    title="Bu soru, bir önceki soruyla aynı metin/kökü paylaşıyor">
+                                    <span class="material-icons-outlined">link</span> Ortak Köklü Ekle
+                                </button>
+                                <button class="btn btn-ghost btn-sm btn-icon" id="cropConfirmCancelBtn" title="İptal">
+                                    <span class="material-icons-outlined">close</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right Drawer: Cropped Questions List -->
+                        <div class="crop-drawer">
+                            <div class="crop-drawer-header">
+                                <h4><span class="material-icons-outlined">format_list_bulleted</span> Kırpılan Sorular
+                                </h4>
+                                <span class="badge badge-purple" id="cropExtractedCount">0 Soru</span>
+                            </div>
+                            <div class="crop-drawer-list" id="cropExtractedList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: QUESTION LABELING (BUTTON CHIPS) -->
+                <div class="manual-stage hidden" id="manualStage_label">
+                    <div class="label-stage-header">
+                        <div class="label-tabs-scroll" id="labelQuestionTabs"></div>
+                        <button class="btn btn-ghost btn-icon btn-stage-close" onclick="manualAnalyzer.closeAnalysis()"
+                            title="Analizi Kapat">
+                            <span class="material-icons-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <div class="label-editor-grid">
+                        <!-- Left: Visual Column -->
+                        <div class="label-visual-card card">
+                            <div class="visual-header">
+                                <div class="visual-header-left">
+                                    <h3 id="labelQuestionTitle">Soru 1</h3>
+                                    <button class="btn btn-ghost btn-sm text-danger" id="labelDeleteCurrentQBtn"
+                                        onclick="manualAnalyzer.deleteCroppedQuestion(manualAnalyzer.activeQuestionIndex)"
+                                        title="Bu Soruyu Sil">
+                                        <span class="material-icons-outlined">delete</span>
+                                        <span>Soruyu Sil</span>
+                                    </button>
+                                </div>
+                                <div class="visual-header-actions" style="display:flex;align-items:center;gap:6px;">
+                                    <button class="btn btn-secondary btn-sm" id="labelDrawQuestionBtn"
+                                        onclick="manualAnalyzer.openDrawingForQuestion(manualAnalyzer.activeQuestionIndex)"
+                                        title="Soru Üzerine Çizim Yap">
+                                        <span class="material-icons-outlined">brush</span>
+                                        <span>Çizim Modu</span>
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" id="labelZoomQuestionBtn"
+                                        title="Soruyu Büyük Ekranda Göster">
+                                        <span class="material-icons-outlined">zoom_in</span>
+                                        <span>Büyüt</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="visual-img-container">
+                                <img id="labelQuestionImage" src="" alt="Soru Görseli"
+                                    onclick="manualAnalyzer.openZoomModal()" style="cursor:zoom-in;"
+                                    title="Büyütmek için tıkla">
+                            </div>
+                        </div>
+
+                        <!-- Right: Chip Buttons Form -->
+                        <div class="label-form-card card">
+                            <div class="label-form-header">
+                                <span class="label-form-subtitle">Soru Bilgileri ve Hata Analizi</span>
+                                <button type="button" class="btn btn-ghost btn-xs text-accent"
+                                    onclick="manualAnalyzer.applyCurrentToAll()"
+                                    title="Mevcut sorudaki sınav, ders, konu ve hata nedenini sonraki tüm sorulara kopyalar">
+                                    <span class="material-icons-outlined" style="font-size:14px;">content_copy</span>
+                                    Ders ve Konuyu Diğer Sorulara Uygula
+                                </button>
+                            </div>
+
+                            <!-- Aktif Alan Bilgisi (Soru Bilgilerinden Sınav Türü Seçimi Kaldırıldı) -->
+                            <div class="active-exam-banner"
+                                style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 14px;background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.2);border-radius:10px;margin-bottom:14px;">
+                                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                    <span class="material-icons-outlined"
+                                        style="color:var(--primary-color);font-size:20px;">school</span>
+                                    <span style="font-size:14px;color:var(--text-secondary);">Sınav Alanı: <strong
+                                            id="currentExamDisplayText"
+                                            style="color:var(--primary-color);font-size:15px;">TYT</strong></span>
+
+                                    <!-- AYT Hızlı Alan Değiştirme Butonları -->
+                                    <div id="aytQuickPillsBar" class="ayt-quick-pill-container" style="display:none;"
+                                        title="AYT Alanını Değiştir">
+                                        <button type="button" class="ayt-quick-pill active" data-subfield="SAYISAL"
+                                            onclick="manualAnalyzer.setAYTSubfield('SAYISAL')">Sayısal</button>
+                                        <button type="button" class="ayt-quick-pill" data-subfield="EA"
+                                            onclick="manualAnalyzer.setAYTSubfield('EA')">Eşit Ağ.</button>
+                                        <button type="button" class="ayt-quick-pill" data-subfield="SÖZEL"
+                                            onclick="manualAnalyzer.setAYTSubfield('SÖZEL')">Sözel</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-ghost btn-xs text-accent"
+                                    onclick="manualAnalyzer.promptChangeExam()" title="Bu denemenin alanını değiştir">
+                                    <span class="material-icons-outlined" style="font-size:14px;">edit</span> Alanı
+                                    Değiştir
+                                </button>
+                            </div>
+
+                            <!-- 2. Ders -->
+                            <div class="chip-section">
+                                <label class="chip-section-label">
+                                    <span class="material-icons-outlined">menu_book</span> Ders
+                                </label>
+                                <div class="chip-buttons-group" id="chipsSubjectContainer"></div>
+                            </div>
+
+                            <!-- 3. Konu -->
+                            <div class="chip-section">
+                                <label class="chip-section-label">
+                                    <span class="material-icons-outlined">topic</span> Konu
+                                </label>
+                                <div class="chip-buttons-group" id="chipsTopicContainer"></div>
+                            </div>
+
+                            <!-- 4. Durum -->
+                            <div class="chip-section">
+                                <label class="chip-section-label">
+                                    <span class="material-icons-outlined">rule</span> Çözüm Durumu
+                                </label>
+                                <div class="chip-buttons-group status-group" id="chipsStatusContainer"></div>
+                            </div>
+
+                            <!-- 5. Doğru Cevap Şıkkı (İsteğe Bağlı) -->
+                            <div class="chip-section">
+                                <label class="chip-section-label">
+                                    <span class="material-icons-outlined">verified</span> Doğru Cevap
+                                    <span style="font-size:0.75rem;color:var(--text-tertiary);font-weight:400;"> (İsteğe
+                                        Bağlı)</span>
+                                </label>
+                                <div class="chip-buttons-group" id="chipsCorrectAnswerContainer"></div>
+                            </div>
+
+                            <!-- 6. Hata Sebebi -->
+                            <div class="chip-section" id="labelErrorSection">
+                                <label class="chip-section-label">
+                                    <span class="material-icons-outlined">error_outline</span> Hata Nedeni
+                                </label>
+                                <div class="chip-buttons-group" id="chipsErrorContainer"></div>
+                            </div>
+
+                            <!-- 7. Kişisel Not -->
+                            <div class="chip-section">
+                                <label class="chip-section-label">
+                                    <span class="material-icons-outlined">edit_note</span> Çözüm Notu / İpucu
+                                    <span style="font-size:0.75rem;color:var(--text-tertiary);font-weight:400;"> (İsteğe
+                                        Bağlı)</span>
+                                </label>
+                                <textarea id="labelQuestionNote" rows="2"
+                                    placeholder="Örn: Formülü ters hatırladım, karekök çift kuvvete dikkat et!"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Label Bottom Action Bar -->
+                    <div class="label-bottom-bar">
+                        <div class="label-nav-left">
+                            <button class="btn btn-ghost btn-sm" id="manualBackToCropBtn">
+                                <span class="material-icons-outlined">content_cut</span> Soru Kırpmaya Geri Dön
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="labelPrevQBtn">
+                                <span class="material-icons-outlined">chevron_left</span> Önceki Soru
+                            </button>
+                            <span class="q-counter-badge" id="labelQCounter">1 / 1</span>
+                            <button class="btn btn-secondary btn-sm" id="labelNextQBtn">
+                                Sonraki Soru <span class="material-icons-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                        <div class="label-nav-right">
+                            <button class="btn btn-primary btn-lg" id="manualSaveAnalysisBtn">
+                                <span class="material-icons-outlined">check_circle</span>
+                                Analizi Tamamla ve Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== AI ANALYSIS (SEPARATE PAGE) ===== -->
+        <section class="page" id="page-ai-analysis">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Yapay Zeka Sınav Analizi ⚡</h1>
+                    <p class="page-subtitle">Test fotoğrafınızı veya PDF belgenizi yükleyin; yapay zeka soruları
+                        otomatik tespit edip analiz etsin.</p>
+                </div>
+            </div>
+
+            <div class="analysis-container">
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZoneAi">
+                    <div class="upload-zone-content">
+                        <div class="upload-icon-wrapper">
+                            <span class="material-icons-outlined">psychology</span>
+                        </div>
+                        <h3>Test Fotoğrafı veya PDF Belgesi Yükleyin</h3>
+                        <p>Dosyaları buraya sürükleyin veya seçmek için tıklayın</p>
+                        <div class="upload-formats">
+                            <span class="format-badge">JPG</span>
+                            <span class="format-badge">PNG</span>
+                            <span class="format-badge">PDF</span>
+                            <span class="format-badge">WEBP</span>
+                        </div>
+                        <input type="file" id="fileInputAi" accept="image/*,.pdf" multiple hidden>
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="preview-area hidden" id="previewAreaAi">
+                    <div class="preview-header">
+                        <h3><span class="material-icons-outlined">preview</span> Yüklenen Dosyalar</h3>
+                        <button class="btn btn-ghost btn-sm" id="clearFilesAi">
+                            <span class="material-icons-outlined">delete_sweep</span> Temizle
+                        </button>
+                    </div>
+                    <div class="preview-grid" id="previewGridAi"></div>
+                    <div class="analysis-options">
+                        <div class="form-group">
+                            <label>Ders / Konu</label>
+                            <select id="subjectSelectAi">
+                                <option value="auto">Otomatik Algıla</option>
+                                <option value="matematik">Matematik</option>
+                                <option value="fizik">Fizik</option>
+                                <option value="kimya">Kimya</option>
+                                <option value="biyoloji">Biyoloji</option>
+                                <option value="turkce">Türkçe</option>
+                                <option value="tarih">Tarih</option>
+                                <option value="cografya">Coğrafya</option>
+                                <option value="ingilizce">İngilizce</option>
+                                <option value="diger">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Test Adı (İsteğe bağlı)</label>
+                            <input type="text" id="testNameInputAi" placeholder="Örn: TYT Deneme 5">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg btn-analyze" id="analyzeBtnAi">
+                        <span class="material-icons-outlined">auto_fix_high</span>
+                        Yapay Zeka ile Analiz Et
+                    </button>
+                </div>
+
+                <!-- Analysis Progress -->
+                <div class="analysis-progress hidden" id="analysisProgressAi">
+                    <div class="progress-content">
+                        <div class="ai-loader">
+                            <div class="ai-loader-ring"></div>
+                            <span class="material-icons-outlined">psychology</span>
+                        </div>
+                        <h3 id="progressTitleAi">Analiz Ediliyor...</h3>
+                        <p id="progressSubtitleAi">Yapay zeka soruları inceliyor</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBarAi"></div>
+                        </div>
+                        <div class="progress-steps">
+                            <div class="progress-step active" id="step1Ai">
+                                <span class="material-icons-outlined">image_search</span>
+                                <span>Görüntü İşleniyor</span>
+                            </div>
+                            <div class="progress-step" id="step2Ai">
+                                <span class="material-icons-outlined">quiz</span>
+                                <span>Sorular Algılanıyor</span>
+                            </div>
+                            <div class="progress-step" id="step3Ai">
+                                <span class="material-icons-outlined">grading</span>
+                                <span>Puanlanıyor</span>
+                            </div>
+                            <div class="progress-step" id="step4Ai">
+                                <span class="material-icons-outlined">auto_stories</span>
+                                <span>Rapor Oluşturuluyor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Results (inline) -->
+                <div class="analysis-results hidden" id="analysisResultsAi">
+                    <div class="results-header">
+                        <div class="results-score-circle">
+                            <svg viewBox="0 0 120 120">
+                                <circle class="score-bg" cx="60" cy="60" r="52" />
+                                <circle class="score-fill" cx="60" cy="60" r="52" id="scoreCircleAi" />
+                            </svg>
+                            <span class="score-text" id="scoreTextAi">0</span>
+                        </div>
+                        <div class="results-summary">
+                            <h2 id="resultsTitleAi">Analiz Tamamlandı</h2>
+                            <div class="results-meta">
+                                <span class="meta-item correct"><span
+                                        class="material-icons-outlined">check_circle</span> <b id="correctCountAi">0</b>
+                                    Doğru</span>
+                                <span class="meta-item wrong"><span class="material-icons-outlined">cancel</span> <b
+                                        id="wrongCountAi">0</b> Yanlış</span>
+                                <span class="meta-item blank"><span class="material-icons-outlined">help_outline</span>
+                                    <b id="blankCountAi">0</b> Boş</span>
+                            </div>
+                            <div class="results-actions">
+                                <button class="btn btn-primary btn-sm" onclick="app.navigateTo('report')">
+                                    <span class="material-icons-outlined">description</span> Raporu Gör
+                                </button>
+                                <button class="btn btn-secondary btn-sm" id="addToPoolBtnAi">
+                                    <span class="material-icons-outlined">playlist_add</span> Tekrar Havuzuna Ekle
+                                </button>
+                                <button class="btn btn-ghost btn-sm" id="newAnalysisBtnAi">
+                                    <span class="material-icons-outlined">add</span> Yeni Analiz
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="questions-list" id="questionsListAi"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== RESULTS (History & Detail) ===== -->
+        <section class="page" id="page-results">
+            <!-- Results History List View -->
+            <div id="resultsHistoryView">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Analiz Geçmişi ve Sonuçlar</h1>
+                        <p class="page-subtitle">Tamamlanan tüm testlerinizi ve soru analizlerinizi inceleyin.</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <span class="material-icons-outlined">search</span>
+                            <input type="text" id="resultsSearch" placeholder="Test adı veya ders ara...">
+                        </div>
+                        <select id="resultsExamFilter" class="filter-select">
+                            <option value="all">Tüm Alanlar</option>
+                            <option value="TYT">TYT</option>
+                            <option value="AYT">AYT (Tümü)</option>
+                            <option value="AYT-SAYISAL">AYT - Sayısal</option>
+                            <option value="AYT-EA">AYT - Eşit Ağırlık</option>
+                            <option value="AYT-SÖZEL">AYT - Sözel</option>
+                            <option value="ALES">ALES</option>
+                            <option value="KPSS">KPSS</option>
+                            <option value="LGS">LGS</option>
+                            <option value="YDT">YDT</option>
+                            <option value="DGS">DGS</option>
+                            <option value="MSÜ">MSÜ</option>
+                            <option value="Genel">Genel</option>
+                        </select>
+                        <select id="resultsFilter" class="filter-select">
+                            <option value="all">Tüm Dersler</option>
+                            <option value="matematik">Matematik</option>
+                            <option value="fizik">Fizik</option>
+                            <option value="kimya">Kimya</option>
+                            <option value="biyoloji">Biyoloji</option>
+                            <option value="turkce">Türkçe</option>
+                            <option value="tarih">Tarih</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="results-history-list" id="resultsHistoryList">
+                    <div class="empty-state">
+                        <span class="material-icons-outlined">assessment</span>
+                        <p>Henüz analiz sonucu bulunmuyor.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Detail View (When viewing a specific analysis) -->
+            <div id="resultsDetailView" style="display:none; margin-top: 10px;">
+                <div class="results-detail-nav" style="margin-bottom: 14px;">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="manualAnalyzer.closeResultsDetail()"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:var(--bg-secondary);border:1px solid var(--border-color);color:var(--text-secondary);cursor:pointer;">
+                        <span class="material-icons-outlined" style="font-size:18px;">arrow_back</span>
+                        <span style="font-weight:600;">Sonuçlar Listesine Dön</span>
+                    </button>
+                </div>
+
+                <!-- STAGE 4: RESULTS -->
+                <div class="manual-stage hidden" id="manualStage_results">
+                    <div class="card manual-results-hero">
+                        <button class="btn btn-ghost btn-icon btn-stage-close results-close-btn"
+                            onclick="manualAnalyzer.closeAnalysis()" title="Kapat">
+                            <span class="material-icons-outlined">close</span>
+                        </button>
+                        <div class="results-score-circle">
+                            <svg viewBox="0 0 120 120">
+                                <circle class="score-bg" cx="60" cy="60" r="52" />
+                                <circle class="score-fill" cx="60" cy="60" r="52" id="manualScoreCircle" />
+                            </svg>
+                            <span class="score-text" id="manualScoreValue">0</span>
+                        </div>
+                        <div class="results-summary">
+                            <!-- Title Row with Name Edit -->
+                            <div class="results-title-row" id="manualResultTitleDisplayRow"
+                                style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
+                                <h2 id="manualResultTitle" style="margin:0;cursor:pointer;"
+                                    title="İsmi düzenlemek için çift tıklayın veya butona basın"
+                                    ondblclick="manualAnalyzer.promptRenameAnalysis()">Soru Analizi Tamamlandı</h2>
+                                <button type="button" class="btn btn-ghost btn-xs text-accent" id="renameAnalysisBtn"
+                                    onclick="manualAnalyzer.promptRenameAnalysis()" title="Deneme Adını Düzenle"
+                                    style="padding:4px 10px;font-size:13px;display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(124, 92, 252, 0.35);border-radius:8px;background:rgba(124, 92, 252, 0.12);color:var(--accent-primary);cursor:pointer;transition:all 0.2s ease;">
+                                    <span class="material-icons-outlined" style="font-size:16px;">edit</span>
+                                    <span style="font-weight:600;">Adı Düzenle</span>
+                                </button>
+                            </div>
+
+                            <!-- Title Inline Edit Form -->
+                            <div class="results-title-edit-row" id="manualResultTitleEditRow"
+                                style="display:none;align-items:center;gap:8px;margin-bottom:8px;width:100%;max-width:550px;">
+                                <div style="position:relative;flex:1;">
+                                    <input type="text" id="manualResultTitleInput" class="form-input"
+                                        placeholder="Deneme adı..."
+                                        style="width:100%;padding:8px 12px;font-size:1.15rem;font-weight:700;border-radius:8px;background:var(--bg-input, rgba(0,0,0,0.25));border:1.5px solid var(--accent-primary);color:var(--text-primary);outline:none;box-shadow:0 0 0 3px rgba(124, 92, 252, 0.2);"
+                                        onkeydown="if(event.key==='Enter'){manualAnalyzer.saveRenamedAnalysis();}else if(event.key==='Escape'){manualAnalyzer.cancelRenameAnalysis();}" />
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm"
+                                    onclick="manualAnalyzer.saveRenamedAnalysis()" title="Kaydet"
+                                    style="display:inline-flex;align-items:center;gap:4px;padding:8px 14px;border-radius:8px;">
+                                    <span class="material-icons-outlined" style="font-size:16px;">check</span> Kaydet
+                                </button>
+                                <button type="button" class="btn btn-ghost btn-sm"
+                                    onclick="manualAnalyzer.cancelRenameAnalysis()" title="Vazgeç"
+                                    style="padding:8px 10px;border-radius:8px;">
+                                    <span class="material-icons-outlined" style="font-size:18px;">close</span>
+                                </button>
+                            </div>
+
+                            <div class="results-meta">
+                                <span class="meta-item total"
+                                    style="background:rgba(255,255,255,0.06);color:var(--text-primary);"><span
+                                        class="material-icons-outlined">format_list_numbered</span> <b
+                                        id="manualTotalCount">0</b> Soru</span>
+                                <span class="meta-item correct"><span
+                                        class="material-icons-outlined">check_circle</span> <b
+                                        id="manualCorrectCount">0</b> Doğru</span>
+                                <span class="meta-item wrong"><span class="material-icons-outlined">cancel</span> <b
+                                        id="manualWrongCount">0</b> Yanlış</span>
+                                <span class="meta-item blank"><span class="material-icons-outlined">help_outline</span>
+                                    <b id="manualBlankCount">0</b> Boş</span>
+                                <span class="meta-item net" id="manualNetContainer"
+                                    style="background:rgba(99,102,241,0.15);color:#6366f1;font-weight:700;"><span
+                                        class="material-icons-outlined">insights</span> <b id="manualNetCount">0.00</b>
+                                    Net</span>
+                            </div>
+
+                            <!-- Ders Ders Sonradan Doğru Ekleme Paneli -->
+                            <div class="add-correct-count-container" id="addCorrectCountContainer"
+                                style="display:none;margin-top:16px;">
+                                <div class="subject-correct-panel card"
+                                    style="padding:18px;border:1.5px solid var(--border-color);border-radius:12px;background:var(--bg-secondary);">
+                                    <div class="subject-correct-header"
+                                        style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+                                        <div>
+                                            <h4
+                                                style="margin:0;display:flex;align-items:center;gap:8px;font-size:16px;color:var(--text-primary);">
+                                                <span class="material-icons-outlined"
+                                                    style="color:var(--color-correct);">playlist_add_check</span>
+                                                Ders Ders Doğru Sayıları ve Netler
+                                            </h4>
+                                            <p style="margin:4px 0 0;font-size:13px;color:var(--text-secondary);">
+                                                Kırptığınız sorular haricindeki doğrularınızı ders bazında girin. Netler
+                                                anlık hesaplanır.
+                                            </p>
+                                        </div>
+                                        <button class="btn btn-ghost btn-sm"
+                                            onclick="manualAnalyzer.toggleCorrectCountForm()" title="Kapat">
+                                            <span class="material-icons-outlined">close</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="subject-correct-table-wrapper" style="overflow-x:auto;">
+                                        <table class="subject-correct-table"
+                                            style="width:100%;border-collapse:collapse;margin-bottom:12px;">
+                                            <thead>
+                                                <tr style="border-bottom:1px solid var(--border-color);font-size:12px;">
+                                                    <th
+                                                        style="padding:10px 8px;text-align:left;min-width:130px;color:var(--text-secondary);">
+                                                        Ders</th>
+                                                    <th style="padding:10px 8px;text-align:center;width:90px;color:var(--text-secondary);"
+                                                        title="Dersin toplam soru sayısı">Toplam Soru</th>
+                                                    <th
+                                                        style="padding:10px 8px;text-align:center;width:95px;color:var(--color-correct);font-weight:700;">
+                                                        <span style="display:inline-flex;align-items:center;gap:3px;">
+                                                            Doğru Sayısı
+                                                            <span class="material-icons-outlined info-icon"
+                                                                data-tooltip="Otomatik hesaplanır: Toplam - İptal - Yanlış - Boş. Manuel olarak da düzenleyebilirsiniz."
+                                                                style="font-size:14px;color:var(--color-correct);opacity:0.8;cursor:pointer;">help_outline</span>
+                                                        </span>
+                                                    </th>
+                                                    <th
+                                                        style="padding:10px 8px;text-align:center;width:75px;color:var(--color-wrong);font-weight:700;">
+                                                        Yanlış</th>
+                                                    <th
+                                                        style="padding:10px 8px;text-align:center;width:75px;color:var(--color-blank);font-weight:700;">
+                                                        Boş</th>
+                                                    <th style="padding:10px 8px;text-align:center;width:80px;color:var(--text-tertiary);"
+                                                        title="Hatalı / İptal edilen soru (değerlendirme dışı tutulur)">
+                                                        <span style="display:inline-flex;align-items:center;gap:3px;">
+                                                            İptal
+                                                            <span class="material-icons-outlined info-icon"
+                                                                data-tooltip="ÖSYM/MEB kuralı: İptal edilen sorular değerlendirme dışı bırakılır, doğru/yanlış ve net hesabını olumsuz etkilemez."
+                                                                style="font-size:14px;color:var(--text-tertiary);cursor:pointer;">help_outline</span>
+                                                        </span>
+                                                    </th>
+                                                    <th
+                                                        style="padding:10px 8px;text-align:right;width:100px;color:var(--primary-color);font-weight:700;">
+                                                        Canlı Net</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="subjectCorrectListContainer">
+                                                <!-- Dynamically rendered rows per subject -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="subject-correct-add-row"
+                                        style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+                                        <input type="text" id="addCustomSubjectInput"
+                                            placeholder="Yeni ders ekle (örn: Felsefe)..."
+                                            style="flex:1;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-input);color:var(--text-primary);font-size:13px;">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="addCustomSubjectBtn"
+                                            onclick="manualAnalyzer.addCustomSubjectRow()">
+                                            <span class="material-icons-outlined">add</span> Ders Ekle
+                                        </button>
+                                    </div>
+
+                                    <div class="subject-correct-summary"
+                                        style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-tertiary);border-radius:10px;margin-bottom:14px;flex-wrap:wrap;gap:12px;border:1px solid var(--border-color);">
+                                        <div style="font-size:13px;">Toplam Soru: <b id="subTotalQuestions"
+                                                style="color:var(--text-primary);font-size:14px;">0</b></div>
+                                        <div style="font-size:13px;">Toplam Doğru: <b id="subTotalCorrect"
+                                                class="text-correct" style="font-size:14px;">0</b></div>
+                                        <div style="font-size:13px;">Toplam Yanlış: <b id="subTotalWrong"
+                                                class="text-wrong" style="font-size:14px;">0</b></div>
+                                        <div style="font-size:13px;">Toplam Boş: <b id="subTotalBlank"
+                                                class="text-blank" style="font-size:14px;">0</b></div>
+                                        <div id="subTotalCancelledBox"
+                                            style="font-size:13px;display:none;color:#f59e0b;">İptal / Hatalı: <b
+                                                id="subTotalCancelled">0</b></div>
+                                        <div style="font-size:15px;color:var(--primary-color);font-weight:700;">TOPLAM
+                                            NET: <span id="subTotalNet">0.00</span> Net</div>
+                                    </div>
+
+                                    <div class="subject-correct-actions"
+                                        style="display:flex;justify-content:flex-end;gap:8px;">
+                                        <button class="btn btn-ghost btn-sm" id="cancelSubjectCorrectBtn"
+                                            onclick="manualAnalyzer.toggleCorrectCountForm(false)">Vazgeç</button>
+                                        <button class="btn btn-primary btn-sm" id="saveSubjectCorrectBtn"
+                                            onclick="manualAnalyzer.saveSubjectCorrectCounts()">
+                                            <span class="material-icons-outlined">save</span> Kaydet ve Güncelle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="results-actions">
+                                <button class="btn btn-secondary btn-sm" id="manualEditAnalysisBtn">
+                                    <span class="material-icons-outlined">edit</span> Soruları ve Analizi Düzenle
+                                </button>
+                                <button class="btn btn-success btn-sm" id="addCorrectCountBtn"
+                                    onclick="manualAnalyzer.toggleCorrectCountForm()" style="display:none;">
+                                    <span class="material-icons-outlined">playlist_add_check</span> Ders Ders Doğru Ekle
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="manualGoReportBtn">
+                                    <span class="material-icons-outlined">description</span> Raporu Gör
+                                </button>
+                                <button class="btn btn-secondary btn-sm" id="manualGoReviewBtn">
+                                    <span class="material-icons-outlined">replay_circle_filled</span> Tekrar Havuzuna
+                                    Git
+                                </button>
+                                <button class="btn btn-ghost btn-sm" id="manualNewAnalysisBtn">
+                                    <span class="material-icons-outlined">add</span> Yeni Analiz Başlat
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ders Bazında Sonuçlar ve Netler Tablosu -->
+                    <div class="manual-results-breakdown card" id="manualSubjectBreakdownCard"
+                        style="margin-bottom:24px;">
+                        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                            <h3 style="margin:0;display:flex;align-items:center;gap:8px;">
+                                <span class="material-icons-outlined text-primary">assessment</span>
+                                Ders Bazında Başarı ve Netler
+                            </h3>
+                            <button class="btn btn-secondary btn-xs" onclick="manualAnalyzer.toggleCorrectCountForm()">
+                                <span class="material-icons-outlined" style="font-size:16px;">edit</span>
+                                Ders Doğrularını Düzenle
+                            </button>
+                        </div>
+                        <div class="card-body" id="manualSubjectBreakdownBody" style="padding:16px;"></div>
+                    </div>
+
+                    <div class="manual-results-breakdown">
+                        <h3>Soru Dağılımı ve Analiz Detayları</h3>
+                        <div class="manual-questions-breakdown-list" id="manualResultQuestionsList"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== STUDY REPORT ===== -->
+        <section class="page" id="page-report">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Çalışma Raporu</h1>
+                    <p class="page-subtitle">Ders ve konu bazında detaylı başarı analizi, gelişim grafikleri ve kişisel
+                        öneriler.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="exportReportBtn">
+                        <span class="material-icons-outlined">download</span> Raporu İndir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtreler -->
+            <div class="report-filters">
+                <select id="reportExamFilter">
+                    <option value="all">Tüm Sınavlar</option>
+                    <option value="TYT">TYT</option>
+                    <option value="AYT">AYT</option>
+                    <option value="YDT">YDT</option>
+                    <option value="Okul">Okul Sınavı</option>
+                    <option value="Diğer">Diğer</option>
+                </select>
+                <select id="reportSubjectFilter">
+                    <option value="all">Tüm Dersler</option>
+                    <option value="Matematik">Matematik</option>
+                    <option value="Türkçe">Türkçe</option>
+                    <option value="Fizik">Fizik</option>
+                    <option value="Kimya">Kimya</option>
+                    <option value="Biyoloji">Biyoloji</option>
+                    <option value="Tarih">Tarih</option>
+                    <option value="Coğrafya">Coğrafya</option>
+                    <option value="Felsefe">Felsefe</option>
+                    <option value="Din Kültürü">Din Kültürü</option>
+                    <option value="İngilizce">İngilizce</option>
+                    <option value="Genel">Genel / Karma</option>
+                    <option value="Diğer">Diğer</option>
+                </select>
+            </div>
+
+            <div id="reportContent">
+                <div class="empty-state">
+                    <span class="material-icons-outlined">description</span>
+                    <p>Rapor oluşturmak için önce bir analiz yapın.</p>
+                    <button class="btn btn-primary btn-sm" onclick="app.navigateTo('analysis')">Analiz Yap</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== REVIEW POOL ===== -->
+        <section class="page" id="page-review">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Tekrar Havuzu</h1>
+                    <p class="page-subtitle">Yanlış veya boş bıraktığınız soruları aralıklı tekrar yöntemiyle
+                        pekiştirin.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="startReviewBtn">
+                        <span class="material-icons-outlined">play_arrow</span>
+                        Tekrar Oturumu Başlat
+                    </button>
+                </div>
+            </div>
+
+            <div class="review-stats">
+                <div class="review-stat">
+                    <span class="material-icons-outlined">today</span>
+                    <div>
+                        <b id="reviewDueToday">0</b>
+                        <span>Bugün Tekrar</span>
+                    </div>
+                </div>
+                <div class="review-stat">
+                    <span class="material-icons-outlined">hourglass_top</span>
+                    <div>
+                        <b id="reviewUpcoming">0</b>
+                        <span>Yaklaşan</span>
+                    </div>
+                </div>
+                <div class="review-stat">
+                    <span class="material-icons-outlined">done_all</span>
+                    <div>
+                        <b id="reviewMastered">0</b>
+                        <span>Öğrenildi</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-filters">
+                <select id="reviewExamFilter" class="filter-select">
+                    <option value="all">Tüm Alanlar</option>
+                </select>
+                <select id="reviewSubjectFilter" class="filter-select">
+                    <option value="all">Tüm Dersler</option>
+                </select>
+                <select id="reviewTopicFilter" class="filter-select">
+                    <option value="all">Tüm Konular</option>
+                </select>
+                <select id="reviewStatusFilter" class="filter-select">
+                    <option value="all">Tüm Durumlar</option>
+                    <option value="due">Tekrar Zamanı Gelenler</option>
+                    <option value="upcoming">Yaklaşanlar</option>
+                    <option value="mastered">Öğrenilenler</option>
+                </select>
+            </div>
+
+            <div class="review-pool-list" id="reviewPoolList">
+                <div class="empty-state">
+                    <span class="material-icons-outlined">replay_circle_filled</span>
+                    <p>Tekrar havuzu boş. Yanlış sorular otomatik olarak buraya eklenir.</p>
+                </div>
+            </div>
+
+            <!-- Review Session Workstation (Split Canvas + Side Panel) -->
+            <div class="review-session hidden" id="reviewSession">
+                <div class="review-session-container">
+                    <!-- Session Top Bar -->
+                    <div class="review-session-topbar">
+                        <div class="review-session-title">
+                            <span class="material-icons-outlined">replay_circle_filled</span>
+                            <h3>Tekrar Çözüm Oturumu</h3>
+                            <span class="review-progress-badge" id="reviewProgressText">1 / 10</span>
+                        </div>
+                        <button class="btn btn-ghost btn-icon" id="closeReviewSession" title="Oturumu Kapat">
+                            <span class="material-icons-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Split Workstation: Left Drawing Canvas / Right Details -->
+                    <div class="review-session-workspace">
+                        <!-- Left: Live Drawing Pane -->
+                        <div class="review-canvas-pane">
+                            <!-- Integrated Drawing Toolbar -->
+                            <div class="review-canvas-toolbar" id="reviewCanvasToolbar">
+                                <div class="toolbar-group">
+                                    <button class="tool-btn active" data-review-tool="pen" title="Kalem (P)">
+                                        <span class="material-icons-outlined">edit</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="highlighter" title="Fosforlu Kalem (H)">
+                                        <span class="material-icons-outlined">border_color</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="eraser"
+                                        title="Piksel Silgi (E) - Klasik Parça Silgisi">
+                                        <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path
+                                                d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+                                            <path d="M22 21H7" />
+                                            <path d="m5 11 9 9" />
+                                        </svg>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="stroke-eraser"
+                                        title="Çizgi / Obje Silgisi (S) - Dokunulan Çizgiyi Tümüyle Siler">
+                                        <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path
+                                                d="m6 18-3-3c-.8-.8-.8-2 0-2.8l7-7c.8-.8 2-.8 2.8 0l4 4c.8.8.8 2 0 2.8L10.5 18" />
+                                            <path d="m4.8 9.5 6.4 6.4" />
+                                            <path d="M2 21h8" />
+                                            <path d="M14 17c1.5-1.5 3-2 5-2" stroke-dasharray="2 2" />
+                                            <line x1="16" y1="13" x2="22" y2="19" stroke-width="2" />
+                                            <line x1="22" y1="13" x2="16" y2="19" stroke-width="2" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="toolbar-divider"></div>
+                                <div class="toolbar-group shape-tools-group">
+                                    <button class="tool-btn" data-review-tool="line" title="Düz Çizgi (L)">
+                                        <span class="material-icons-outlined">horizontal_rule</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="dashed-line" title="Kesikli Çizgi">
+                                        <svg class="tool-svg" viewBox="0 0 24 24">
+                                            <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor"
+                                                stroke-width="2.5" stroke-dasharray="4 3" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="arrow" title="Ok Çizgisi (A)">
+                                        <span class="material-icons-outlined">arrow_right_alt</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="double-arrow" title="Çift Taraflı Ok">
+                                        <svg class="tool-svg" viewBox="0 0 24 24">
+                                            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor"
+                                                stroke-width="2" />
+                                            <polyline points="8 8 4 12 8 16" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <polyline points="16 8 20 12 16 16" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="dashed-arrow" title="Kesikli Ok">
+                                        <svg class="tool-svg" viewBox="0 0 24 24">
+                                            <line x1="4" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="2"
+                                                stroke-dasharray="3 2.5" />
+                                            <polyline points="15 7 20 12 15 17" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="rect" title="Dikdörtgen (R)">
+                                        <span class="material-icons-outlined">crop_square</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="dashed-rect" title="Kesikli Dikdörtgen">
+                                        <svg class="tool-svg" viewBox="0 0 24 24">
+                                            <rect x="4" y="4" width="16" height="16" rx="2" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-dasharray="3.5 2.5" />
+                                        </svg>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="circle" title="Daire / Elips (C)">
+                                        <span class="material-icons-outlined">circle</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="triangle" title="Üçgen (T)">
+                                        <span class="material-icons-outlined">change_history</span>
+                                    </button>
+                                    <button class="tool-btn" data-review-tool="right-triangle" title="Dik Üçgen">
+                                        <svg class="tool-svg" viewBox="0 0 24 24">
+                                            <polygon points="4 20 20 20 4 4" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linejoin="round" />
+                                            <line x1="4" y1="15" x2="9" y2="15" stroke="currentColor"
+                                                stroke-width="1.5" />
+                                            <line x1="9" y1="15" x2="9" y2="20" stroke="currentColor"
+                                                stroke-width="1.5" />
+                                        </svg>
+                                    </button>
+
+                                </div>
+                                <div class="toolbar-divider"></div>
+                                <div class="toolbar-group">
+                                    <div class="size-control">
+                                        <span class="material-icons-outlined">line_weight</span>
+                                        <input type="range" id="reviewBrushSize" min="1" max="30" value="3"
+                                            title="Kalınlık">
+                                        <span class="size-value" id="reviewSizeValue">3</span>
+                                    </div>
+                                </div>
+                                <div class="toolbar-divider"></div>
+                                <div class="toolbar-group color-group">
+                                    <div class="color-swatches" id="reviewColorSwatches">
+                                        <!-- Dynamically generated by ColorPaletteManager -->
+                                    </div>
+                                </div>
+                                <div class="toolbar-divider"></div>
+                                <div class="toolbar-group">
+                                    <button class="tool-btn" id="reviewUndoBtn" title="Geri Al (Ctrl+Z)">
+                                        <span class="material-icons-outlined">undo</span>
+                                    </button>
+                                    <button class="tool-btn" id="reviewRedoBtn" title="İleri Al (Ctrl+Y)">
+                                        <span class="material-icons-outlined">redo</span>
+                                    </button>
+                                    <button class="tool-btn" id="reviewClearBtn" title="Çizimi Temizle">
+                                        <span class="material-icons-outlined">delete_outline</span>
+                                    </button>
+                                </div>
+                                <div class="toolbar-divider"></div>
+                                <div class="toolbar-group zoom-group">
+                                    <button class="tool-btn" id="reviewZoomOutBtn" title="Küçült"><span
+                                            class="material-icons-outlined">zoom_out</span></button>
+                                    <span class="zoom-value" id="reviewZoomValue">100%</span>
+                                    <button class="tool-btn" id="reviewZoomInBtn" title="Büyüt"><span
+                                            class="material-icons-outlined">zoom_in</span></button>
+                                    <button class="tool-btn" id="reviewZoomResetBtn" title="Sıfırla"><span
+                                            class="material-icons-outlined">restart_alt</span></button>
+                                    <button class="tool-btn" data-review-tool="move" id="reviewMoveBtn"
+                                        title="Fotoğrafı Taşı (M)"><span
+                                            class="material-icons-outlined">open_with</span></button>
+                                </div>
+                            </div>
+
+                            <!-- Canvas Scroll/Pan Viewport -->
+                            <div class="review-canvas-viewport" id="reviewCanvasViewport">
+                                <div class="review-canvas-inner" id="reviewCanvasInner">
+                                    <canvas id="reviewCanvasBg"></canvas>
+                                    <img id="reviewQuestionImg" class="canvas-question-img" alt="Soru Görseli">
+                                    <canvas id="reviewCanvas"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Details & Answering Sidebar -->
+                        <div class="review-details-sidebar" id="reviewSidePanel">
+                            <div class="review-sidebar-content">
+                                <div class="review-meta-box card">
+                                    <div class="review-badge-row">
+                                        <span class="badge badge-exam" id="reviewCardExam">TYT</span>
+                                        <span class="badge badge-purple" id="reviewCardSubject">Ders</span>
+                                        <span class="badge badge-topic" id="reviewCardTopic">Konu</span>
+                                    </div>
+                                    <h3 class="review-card-title" id="reviewCardTitle">Soru 1</h3>
+                                    <p class="review-test-subtitle" id="reviewCardTestTitle">Test Adı</p>
+
+                                    <!-- Mistake & Note Info -->
+                                    <div class="review-info-section" id="reviewMistakeSection">
+                                        <div class="review-info-row">
+                                            <span class="material-icons-outlined text-wrong">error_outline</span>
+                                            <div>
+                                                <b>Önceki Hata:</b>
+                                                <span id="reviewCardError">Dikkatsizlik</span>
+                                            </div>
+                                        </div>
+                                        <div class="review-info-row" id="reviewCardStudentAnswerRow">
+                                            <span class="material-icons-outlined">person</span>
+                                            <div>
+                                                <b>Senin Yanıtın:</b>
+                                                <span id="reviewCardStudentAnswer">Yanlış</span>
+                                            </div>
+                                        </div>
+                                        <div class="review-info-note hidden" id="reviewCardNoteBox">
+                                            <b>Notun:</b> <span id="reviewCardNote"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Solution & Answer Area -->
+                                <div class="review-answer-box card">
+                                    <!-- Option Choices in Review Mode (with Boş) -->
+                                    <div class="review-choice-box" id="reviewChoiceBox">
+                                        <label class="review-choice-label">
+                                            <span class="material-icons-outlined">fact_check</span> Cevabını İşaretle:
+                                        </label>
+                                        <div class="review-options-group" id="reviewOptionsGroup">
+                                            <button type="button" class="review-opt-btn" data-review-opt="A">A</button>
+                                            <button type="button" class="review-opt-btn" data-review-opt="B">B</button>
+                                            <button type="button" class="review-opt-btn" data-review-opt="C">C</button>
+                                            <button type="button" class="review-opt-btn" data-review-opt="D">D</button>
+                                            <button type="button" class="review-opt-btn" data-review-opt="E">E</button>
+                                            <button type="button" class="review-opt-btn opt-blank"
+                                                data-review-opt="Boş">Boş</button>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn btn-primary btn-block btn-lg" id="showAnswerBtn">
+                                        <span class="material-icons-outlined">visibility</span> Cevabı Göster
+                                    </button>
+
+                                    <!-- Revealed Answer -->
+                                    <div class="review-revealed-answer hidden" id="reviewRevealedAnswer">
+                                        <!-- Realtime user answer feedback -->
+                                        <div class="user-choice-feedback" id="reviewChoiceFeedback"></div>
+
+                                        <div class="correct-answer-banner">
+                                            <span class="material-icons-outlined text-correct">check_circle</span>
+                                            <div>
+                                                <small>Doğru Cevap</small>
+                                                <h2 id="reviewCorrectAnswerText">A</h2>
+                                            </div>
+                                        </div>
+                                        <div class="review-explanation-content" id="reviewExplanationBox">
+                                            <h4>Çözüm & Açıklama</h4>
+                                            <p id="reviewExplanationText">Açıklama mevcut değil.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Simplified Review Ratings (Auto-determined from choice) -->
+                                    <div class="review-card-actions hidden" id="reviewCardActions">
+                                        <div class="review-navigation-buttons">
+                                            <button class="btn btn-ghost" id="reviewPrevBtn" title="Önceki Soru">
+                                                <span class="material-icons-outlined">arrow_back</span> Önceki
+                                            </button>
+                                            <button class="btn btn-primary" id="reviewConfirmBtn" title="Devam Et">
+                                                Devam Et <span class="material-icons-outlined">arrow_forward</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SETTINGS ===== -->
+        <section class="page" id="page-settings">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Ayarlar</h1>
+                    <p class="page-subtitle">Uygulama tercihlerinizi, tema ve seçeneklerinizi kişiselleştirin.</p>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <!-- Appearance -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">palette</span>
+                        <h3>Görünüm ve Tema</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content" id="appearance-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Tema</span>
+                                <span class="setting-desc">Karanlık ve aydınlık mod arasında geçiş yap</span>
+                            </div>
+                            <div class="theme-switcher">
+                                <button class="theme-btn" data-theme="light" title="Aydınlık Mod">
+                                    <span class="material-icons-outlined">light_mode</span>
+                                </button>
+                                <button class="theme-btn active" data-theme="dark" title="Karanlık Mod">
+                                    <span class="material-icons-outlined">dark_mode</span>
+                                </button>
+                                <button class="theme-btn" data-theme="auto" title="Sistem Teması">
+                                    <span class="material-icons-outlined">brightness_auto</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Yazı Boyutu</span>
+                                <span class="setting-desc">Arayüz yazı boyutunu ayarla</span>
+                            </div>
+                            <div class="font-size-control">
+                                <button class="btn btn-ghost btn-sm" id="fontDecrease">A-</button>
+                                <span id="fontSizeValue">16px</span>
+                                <button class="btn btn-ghost btn-sm" id="fontIncrease">A+</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Animasyonlar</span>
+                                <span class="setting-desc">Arayüz animasyonlarını aç/kapat</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="animationsToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Vurgu Rengi</span>
+                                <span class="setting-desc">Uygulama genelinde kullanılan vurgu ve buton rengi</span>
+                            </div>
+                            <div class="color-palette">
+                                <button class="color-swatch active" data-color="#7c5cfc" style="background: #7c5cfc;"
+                                    title="Mor (Varsayılan)"></button>
+                                <button class="color-swatch" data-color="#3b82f6" style="background: #3b82f6;"
+                                    title="Mavi"></button>
+                                <button class="color-swatch" data-color="#10b981" style="background: #10b981;"
+                                    title="Yeşil"></button>
+                                <button class="color-swatch" data-color="#f59e0b" style="background: #f59e0b;"
+                                    title="Turuncu"></button>
+                                <button class="color-swatch" data-color="#ef4444" style="background: #ef4444;"
+                                    title="Kırmızı"></button>
+                                <button class="color-swatch" data-color="#ec4899" style="background: #ec4899;"
+                                    title="Pembe"></button>
+                                <button class="color-swatch" data-color="#8b5cf6" style="background: #8b5cf6;"
+                                    title="Menekşe"></button>
+                                <button class="color-swatch" data-color="#14b8a6" style="background: #14b8a6;"
+                                    title="Turkuaz"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Settings -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">psychology</span>
+                        <h3>Yapay Zeka (AI) Ayarları</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Yapay Zeka Analizini Aç</span>
+                                <span class="setting-desc">Yapay zeka ile otomatik soru tespit ve analiz sayfasını
+                                    menüde aktif et</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="aiAnalysisToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Gemini API Anahtarı</span>
+                                <span class="setting-desc">Google Gemini API anahtarını gir. <a
+                                        href="https://aistudio.google.com/apikey" target="_blank">Buradan al
+                                        →</a></span>
+                            </div>
+                            <div class="api-key-input">
+                                <input type="password" id="apiKeyInput" placeholder="AIza...">
+                                <button class="btn btn-ghost btn-sm" id="toggleApiKey" title="Göster/Gizle">
+                                    <span class="material-icons-outlined">visibility</span>
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="saveApiKey">Kaydet</button>
+                            </div>
+                        </div>
+                        <div class="setting-item" id="modelSelectItem">
+                            <div class="setting-info">
+                                <span class="setting-name">AI Modeli</span>
+                                <span class="setting-desc" id="modelSelectDesc">API anahtarını kaydettikten sonra
+                                    modeller otomatik yüklenir</span>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <select id="aiModelSelect" style="min-width:220px;">
+                                    <option value="">— API anahtarı girilmedi —</option>
+                                </select>
+                                <button class="btn btn-ghost btn-sm" id="refreshModelsBtn" title="Modelleri Yenile"
+                                    style="display:none;">
+                                    <span class="material-icons-outlined">refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Settings -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">replay_circle_filled</span>
+                        <h3>Tekrar Havuzu Ayarları</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Yanlış Cevap Aralığı</span>
+                                <span class="setting-desc">Yanlış cevaplanan sorular kaç gün sonra tekrar edilsin</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="number" id="reviewIntervalWrong" min="1" max="30" value="1"
+                                    style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary);">
+                                <span>gün</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Boş Cevap Aralığı</span>
+                                <span class="setting-desc">Boş bırakılan sorular kaç gün sonra tekrar edilsin</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="number" id="reviewIntervalBlank" min="1" max="30" value="2"
+                                    style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary);">
+                                <span>gün</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Doğru Cevap Aralığı</span>
+                                <span class="setting-desc">Doğru cevaplanan sorular kaç gün sonra tekrar edilsin</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="number" id="reviewIntervalCorrect" min="1" max="30" value="3"
+                                    style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary);">
+                                <span>gün</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Öğrenildi Sayısı</span>
+                                <span class="setting-desc">Bir soru kaç kez doğru bilinirse tekrar havuzundan
+                                    silinsin</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="number" id="reviewMasteredCount" min="1" max="10" value="3"
+                                    style="width: 80px; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary);">
+                                <span>kez</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keyboard Shortcuts -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">keyboard</span>
+                        <h3>Klavye Kısayolları</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="shortcuts-list" id="shortcutsList">
+                            <div class="shortcut-category">Genel</div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Yeni Analiz</span>
+                                <kbd class="shortcut-keys">Ctrl + N</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Tema Değiştir</span>
+                                <kbd class="shortcut-keys">Ctrl + T</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Tekrar Havuzu</span>
+                                <kbd class="shortcut-keys">Ctrl + R</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Ayarlar</span>
+                                <kbd class="shortcut-keys">Ctrl + ,</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Tam Ekran</span>
+                                <kbd class="shortcut-keys">F11</kbd>
+                            </div>
+                            <div class="shortcut-category" style="margin-top:12px;">Çizim Modu (Drawing Mode)</div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Çizim Modunu Aç</span>
+                                <kbd class="shortcut-keys">Ctrl + D</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Kalem</span>
+                                <kbd class="shortcut-keys">P</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Fosforlu Kalem</span>
+                                <kbd class="shortcut-keys">H</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Piksel Silgi</span>
+                                <kbd class="shortcut-keys">E</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Çizgi Silgisi (Stroke)</span>
+                                <kbd class="shortcut-keys">S</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Çizgi Aracı</span>
+                                <kbd class="shortcut-keys">L</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Kare / Dikdörtgen</span>
+                                <kbd class="shortcut-keys">R</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Daire</span>
+                                <kbd class="shortcut-keys">C</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Üçgen</span>
+                                <kbd class="shortcut-keys">T</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Fotoğrafı Taşı</span>
+                                <kbd class="shortcut-keys">M</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Geri Al</span>
+                                <kbd class="shortcut-keys">Ctrl + Z</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">İleri Al</span>
+                                <kbd class="shortcut-keys">Ctrl + Y</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Büyüt</span>
+                                <kbd class="shortcut-keys">+</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Küçült</span>
+                                <kbd class="shortcut-keys">-</kbd>
+                            </div>
+                            <div class="shortcut-item">
+                                <span class="shortcut-action">Kapat</span>
+                                <kbd class="shortcut-keys">Esc</kbd>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soru Seçenekleri Yönetimi -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">tune</span>
+                        <h3>Sınav, Ders ve Konu Yönetimi</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:16px;">Soru analizinde
+                            kullanılan sınav, ders ve konu seçeneklerini düzenle.</p>
+
+                        <!-- Exam Types -->
+                        <div class="setting-item" style="flex-direction:column;align-items:flex-start;gap:10px;">
+                            <div class="setting-info"
+                                style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                <div>
+                                    <span class="setting-name">Sınav Türleri</span>
+                                    <span class="setting-desc">Sınav türlerini ekle veya kaldır (tüm seçenekler
+                                        silinebilir)</span>
+                                </div>
+                                <button class="btn btn-ghost btn-xs text-accent" onclick="app.resetExamTypes()"
+                                    title="Varsayılan sınav türlerini geri getir">
+                                    <span class="material-icons-outlined" style="font-size:14px;">restart_alt</span>
+                                    Varsayılana Sıfırla
+                                </button>
+                            </div>
+                            <div class="options-manager" id="examTypesManager">
+                                <div class="options-tags" id="examTypesTags"></div>
+                                <div class="options-add-row">
+                                    <input type="text" id="newExamTypeInput" placeholder="Yeni sınav türü (örn: YKS)"
+                                        maxlength="20">
+                                    <button class="btn btn-primary btn-sm" id="addExamTypeBtn">
+                                        <span class="material-icons-outlined">add</span> Ekle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subjects -->
+                        <div class="setting-item"
+                            style="flex-direction:column;align-items:flex-start;gap:10px;margin-top:16px;">
+                            <div class="setting-info"
+                                style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                <div>
+                                    <span class="setting-name">Dersler</span>
+                                    <span class="setting-desc">Ders listesini ekle veya kaldır (tüm dersler
+                                        silinebilir)</span>
+                                </div>
+                                <button class="btn btn-ghost btn-xs text-accent" onclick="app.resetSubjects()"
+                                    title="Varsayılan dersleri geri getir">
+                                    <span class="material-icons-outlined" style="font-size:14px;">restart_alt</span>
+                                    Varsayılana Sıfırla
+                                </button>
+                            </div>
+                            <div class="options-manager" id="subjectsManager">
+                                <div class="options-tags" id="subjectsTags"></div>
+                                <div class="options-add-row">
+                                    <input type="text" id="newSubjectInput" placeholder="Yeni ders (örn: İstatistik)"
+                                        maxlength="30">
+                                    <button class="btn btn-primary btn-sm" id="addSubjectBtn">
+                                        <span class="material-icons-outlined">add</span> Ekle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Topics by Subject -->
+                        <div class="setting-item"
+                            style="flex-direction:column;align-items:flex-start;gap:10px;margin-top:16px;">
+                            <div class="setting-info"
+                                style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                <div>
+                                    <span class="setting-name">Konular (Derse Göre)</span>
+                                    <span class="setting-desc">Seçili derse özel konu ekle veya kaldır (hazır konular da
+                                        silinebilir)</span>
+                                </div>
+                                <button class="btn btn-ghost btn-xs text-accent"
+                                    onclick="app.resetTopics(document.getElementById('topicSettingsSubjectSelect')?.value, document.getElementById('topicSettingsExamSelect')?.value)"
+                                    title="Seçili dersin varsayılan konularını geri getir">
+                                    <span class="material-icons-outlined" style="font-size:14px;">restart_alt</span>
+                                    Varsayılana Sıfırla
+                                </button>
+                            </div>
+                            <div class="options-manager" id="topicsManager">
+                                <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+                                    <select id="topicSettingsSubjectSelect" style="min-width:150px;">
+                                    </select>
+                                    <select id="topicSettingsExamSelect" style="min-width:100px;">
+                                    </select>
+                                </div>
+                                <div class="options-tags" id="topicsTags"></div>
+                                <div class="options-add-row">
+                                    <input type="text" id="newTopicInput" placeholder="Yeni konu ekle" maxlength="40">
+                                    <button class="btn btn-primary btn-sm" id="addTopicSettingsBtn">
+                                        <span class="material-icons-outlined">add</span> Ekle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exam & Net Calculation Settings -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">calculate</span>
+                        <h3>Sınav ve Net Hesaplama Ayarları</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Net Hesaplama Kuralı</span>
+                                <span class="setting-desc">Yanlışların doğruları götürme oranını belirleyin (Net = Doğru
+                                    - Yanlış × Oran)</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+                                <select id="penaltyRuleSelect" class="filter-select" style="min-width:280px;">
+                                    <option value="4_to_1">4 Yanlış 1 Doğruyu Götürür (YKS/KPSS/ALES/DGS - 0.25)
+                                    </option>
+                                    <option value="3_to_1">3 Yanlış 1 Doğruyu Götürür (LGS/Ortaokul - 0.33)</option>
+                                    <option value="0">Yanlış Doğruyu Götürmez (0 - Klasik Sınav)</option>
+                                    <option value="5_to_1">5 Yanlış 1 Doğruyu Götürür (0.20)</option>
+                                    <option value="custom">Özel Oran Belirle...</option>
+                                </select>
+                                <div id="customPenaltyContainer" style="display:none;align-items:center;gap:6px;">
+                                    <span style="font-size:12px;color:var(--text-secondary);">1 Yanlış Başına Ceza
+                                        Oranı:</span>
+                                    <input type="number" id="customPenaltyInput" min="0" max="1" step="0.05"
+                                        value="0.25" style="width:90px;" class="filter-input-sm">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Hoş Geldin Tanıtımı</span>
+                                <span class="setting-desc">Tüm ekranları, soru kesmeyi, net hesabını ve özellikleri
+                                    anlatan tanıtım turunu yeniden başlatın</span>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" id="restartWelcomeTourBtn"
+                                onclick="app.showWelcomeModal(true)">
+                                <span class="material-icons-outlined">help_outline</span> Tanıtım Turunu Başlat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">notifications</span>
+                        <h3>Bildirim ve Ses Ayarları</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Tekrar Hatırlatmaları</span>
+                                <span class="setting-desc">Tekrar zamanı geldiğinde bildirim gönder</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifReviewToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Ses Efektleri</span>
+                                <span class="setting-desc">İşlem tamamlandığında ses çal</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="soundToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Storage -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">folder</span>
+                        <h3>Yerel Dosya Depolama</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="setting-item" id="storageStatusItem">
+                            <div class="setting-info">
+                                <span class="setting-name">Depolama Durumu</span>
+                                <span class="setting-desc" id="storageStatusDesc">Otomatik Hedef: Proje içi
+                                    "Deneme Lab" klasörü</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span class="badge" id="storageStatusBadge"
+                                    style="background:rgba(124,92,252,0.15);color:var(--primary-color)">DenemeLab_Verileri
+                                    (Otomatik)</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Depolama Klasörü Seç / Yetkilendir</span>
+                                <span class="setting-desc">Tüm analizler ve kayıpsız PNG soru görselleri
+                                    "Deneme Lab" klasöründe saklanır</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="selectStorageFolderBtn">
+                                <span class="material-icons-outlined">folder_open</span> Deneme Lab'ı Bağla
+                            </button>
+                        </div>
+                        <div class="setting-item" id="storageInfoItem" style="display:none;">
+                            <div class="setting-info">
+                                <span class="setting-name">Depolama Bilgileri</span>
+                                <span class="setting-desc" id="storageInfoDesc">—</span>
+                            </div>
+                            <button class="btn btn-ghost btn-sm" id="refreshStorageInfoBtn">
+                                <span class="material-icons-outlined">refresh</span> Yenile
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Otomatik Yedekleme</span>
+                                <span class="setting-desc">Her 10 analizde bir otomatik yedek oluştur</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoBackupToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Görsel Kalitesi</span>
+                                <span class="setting-desc">Dosya depolama kullanıldığında: PNG (Kayıpsız),
+                                    Kullanılmadığında: JPEG (Sıkıştırılmış)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span class="badge badge-success" id="imageQualityBadge">PNG (Kayıpsız)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">storage</span>
+                        <h3>Veri Yedekleme ve Yönetim</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Verileri Dışa Aktar (ZIP)</span>
+                                <span class="setting-desc">Tüm veriler tek bir ZIP dosyasına aktarılır: analizler,
+                                    fotoğraflar, soru görselleri, belgeler ve tekrar havuzu</span>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="exportDataBtn">
+                                <span class="material-icons-outlined">file_upload</span> ZIP Olarak Dışa Aktar
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-name">Verileri İçe Aktar</span>
+                                <span class="setting-desc">Daha önce dışa aktarılmış ZIP veya JSON dosyasını
+                                    yükle</span>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="importDataBtn">
+                                <span class="material-icons-outlined">file_download</span> İçe Aktar
+                            </button>
+                            <input type="file" id="importFileInput" accept=".zip,.json" hidden>
+                        </div>
+                        <div class="setting-item danger">
+                            <div class="setting-info">
+                                <span class="setting-name">Tüm Verileri Sil</span>
+                                <span class="setting-desc">Tüm analiz verileri, tekrar havuzu ve ayarlar kalıcı olarak
+                                    silinir</span>
+                            </div>
+                            <button class="btn btn-danger btn-sm" id="deleteAllDataBtn">
+                                <span class="material-icons-outlined">delete_forever</span> Tüm Verileri Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="settings-section card">
+                    <div class="settings-section-header">
+                        <span class="material-icons-outlined">info</span>
+                        <h3>Uygulama Hakkında</h3>
+                        <span class="material-icons-outlined settings-section-toggle">expand_more</span>
+                    </div>
+                    <div class="settings-section-content">
+                        <div class="about-content">
+                            <p><strong>DenemeLab</strong> — Akıllı Sınav Analiz Platformu</p>
+                            <p>Sürüm 1.0.0</p>
+                            <p class="about-desc">Yapay zeka destekli sınav analiz uygulaması. Test fotoğraflarınızı
+                                yükleyin, otomatik puanlama yapın, kişiselleştirilmiş çalışma raporları alın.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========== DRAWING OVERLAY ========== -->
+    <div class="drawing-overlay hidden" id="drawingOverlay">
+        <div class="drawing-toolbar">
+            <div class="toolbar-group">
+                <button class="tool-btn active" data-tool="pen" title="Kalem (P)">
+                    <span class="material-icons-outlined">edit</span>
+                </button>
+                <button class="tool-btn" data-tool="eraser" title="Piksel Silgi (E) - Klasik Parça Silgisi">
+                    <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+                        <path d="M22 21H7" />
+                        <path d="m5 11 9 9" />
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="stroke-eraser" id="strokeEraserBtn"
+                    title="Çizgi / Obje Silgisi (S) - Dokunulan Çizgiyi Tümüyle Siler">
+                    <svg class="tool-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m6 18-3-3c-.8-.8-.8-2 0-2.8l7-7c.8-.8 2-.8 2.8 0l4 4c.8.8.8 2 0 2.8L10.5 18" />
+                        <path d="m4.8 9.5 6.4 6.4" />
+                        <path d="M2 21h8" />
+                        <path d="M14 17c1.5-1.5 3-2 5-2" stroke-dasharray="2 2" />
+                        <line x1="16" y1="13" x2="22" y2="19" stroke-width="2" />
+                        <line x1="22" y1="13" x2="16" y2="19" stroke-width="2" />
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="highlighter" title="Fosforlu Kalem (H)">
+                    <span class="material-icons-outlined">border_color</span>
+                </button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group shape-tools-group">
+                <button class="tool-btn" data-tool="line" title="Düz Çizgi (L)">
+                    <span class="material-icons-outlined">horizontal_rule</span>
+                </button>
+                <button class="tool-btn" data-tool="dashed-line" title="Kesikli Çizgi">
+                    <svg class="tool-svg" viewBox="0 0 24 24">
+                        <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2.5"
+                            stroke-dasharray="4 3" stroke-linecap="round" />
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="arrow" title="Ok Çizgisi (A)">
+                    <span class="material-icons-outlined">arrow_right_alt</span>
+                </button>
+                <button class="tool-btn" data-tool="double-arrow" title="Çift Taraflı Ok">
+                    <svg class="tool-svg" viewBox="0 0 24 24">
+                        <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" />
+                        <polyline points="8 8 4 12 8 16" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <polyline points="16 8 20 12 16 16" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="dashed-arrow" title="Kesikli Ok">
+                    <svg class="tool-svg" viewBox="0 0 24 24">
+                        <line x1="4" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="2"
+                            stroke-dasharray="3 2.5" />
+                        <polyline points="15 7 20 12 15 17" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="rect" title="Dikdörtgen (R)">
+                    <span class="material-icons-outlined">crop_square</span>
+                </button>
+                <button class="tool-btn" data-tool="dashed-rect" title="Kesikli Dikdörtgen">
+                    <svg class="tool-svg" viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-dasharray="3.5 2.5" />
+                    </svg>
+                </button>
+                <button class="tool-btn" data-tool="circle" title="Daire / Elips (C)">
+                    <span class="material-icons-outlined">circle</span>
+                </button>
+                <button class="tool-btn" data-tool="triangle" title="Üçgen (T)">
+                    <span class="material-icons-outlined">change_history</span>
+                </button>
+                <button class="tool-btn" data-tool="right-triangle" title="Dik Üçgen">
+                    <svg class="tool-svg" viewBox="0 0 24 24">
+                        <polygon points="4 20 20 20 4 4" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linejoin="round" />
+                        <line x1="4" y1="15" x2="9" y2="15" stroke="currentColor" stroke-width="1.5" />
+                        <line x1="9" y1="15" x2="9" y2="20" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                </button>
+
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group">
+                <div class="size-control">
+                    <span class="material-icons-outlined">line_weight</span>
+                    <input type="range" id="brushSize" min="1" max="30" value="3" title="Kalınlık">
+                    <span class="size-value" id="sizeValue">3</span>
+                </div>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group color-group">
+                <div class="color-swatches" id="drawingColorSwatches">
+                    <!-- Dynamically generated by ColorPaletteManager -->
+                </div>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group">
+                <button class="tool-btn" id="undoBtn" title="Geri Al (Ctrl+Z)">
+                    <span class="material-icons-outlined">undo</span>
+                </button>
+                <button class="tool-btn" id="redoBtn" title="İleri Al (Ctrl+Y)">
+                    <span class="material-icons-outlined">redo</span>
+                </button>
+                <button class="tool-btn" id="clearCanvasBtn" title="Tümünü Temizle">
+                    <span class="material-icons-outlined">delete_outline</span>
+                </button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group zoom-group">
+                <button class="tool-btn" id="drawZoomOutBtn" title="Küçült (-)"><span
+                        class="material-icons-outlined">zoom_out</span></button>
+                <span class="zoom-value" id="drawZoomValue">100%</span>
+                <button class="tool-btn" id="drawZoomInBtn" title="Büyüt (+)"><span
+                        class="material-icons-outlined">zoom_in</span></button>
+                <button class="tool-btn" id="drawZoomResetBtn" title="Sıfırla"><span
+                        class="material-icons-outlined">restart_alt</span></button>
+                <button class="tool-btn" data-tool="move" id="drawMoveBtn" title="Fotoğrafı Taşı (M)"><span
+                        class="material-icons-outlined">open_with</span></button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-group">
+                <button class="tool-btn" id="saveDrawingBtn" title="Kaydet">
+                    <span class="material-icons-outlined">save</span>
+                </button>
+                <button class="tool-btn" id="closeDrawingBtn" title="Kapat (Esc)">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+        </div>
+        <div class="drawing-canvas-wrapper" id="drawingCanvasWrapper">
+            <div class="drawing-canvas-inner" id="drawingCanvasInner">
+                <canvas id="drawingCanvasBg"></canvas>
+                <img id="drawingQuestionImg" class="canvas-question-img" alt="Soru Görseli">
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TOAST NOTIFICATIONS ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== CONFIRM MODAL ========== -->
+    <div class="modal-overlay hidden" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="material-icons-outlined modal-icon" id="modalIcon">warning</span>
+                <h3 id="modalTitle">Emin misiniz?</h3>
+            </div>
+            <p id="modalMessage">Bu işlem geri alınamaz.</p>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" id="modalCancelBtn">İptal</button>
+                <button class="btn btn-danger" id="modalConfirmBtn">Onayla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== AVERAGE NET EXAM SELECTION MODAL ========== -->
+    <div class="modal-overlay hidden" id="avgNetExamModal">
+        <div class="modal-content" style="max-width: 440px; border-radius: 16px;">
+            <div class="modal-header" style="align-items: center; gap: 12px; margin-bottom: 12px;">
+                <div
+                    style="width: 40px; height: 40px; border-radius: 10px; background: rgba(99,102,241,0.15); color: #6366f1; display: flex; align-items: center; justify-content: center;">
+                    <span class="material-icons-outlined" style="font-size: 24px;">analytics</span>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 17px; font-weight: 700;">Ortalama Net Sınav Türü</h3>
+                    <p style="margin: 2px 0 0; font-size: 13px; color: var(--text-secondary);">Kartta gösterilecek sınav
+                        türünü seçin:</p>
+                </div>
+            </div>
+
+            <div style="margin: 18px 0;">
+                <label
+                    style="display: block; font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Sınav
+                    Türü</label>
+                <div class="select-wrapper">
+                    <select id="avgNetExamSelect" class="form-input"
+                        style="width: 100%; font-size: 14px; padding: 10px 14px; border-radius: 10px;">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+                <div id="avgNetExamPreview"
+                    style="margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;">
+                    <span>Seçilen sınav ortalaması:</span>
+                    <strong id="avgNetExamPreviewVal" style="color: var(--accent-primary); font-size: 15px;">—</strong>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-ghost" id="avgNetExamCancelBtn">Vazgeç</button>
+                <button class="btn btn-primary" id="avgNetExamConfirmBtn">Seçimi Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== WELCOME TOUR MODAL (Hoş Geldin Tanıtımı) ========== -->
+    <div class="modal-overlay hidden" id="welcomeModal">
+        <div class="modal-content welcome-tour-content"
+            style="max-width: 680px; padding: 0; overflow: hidden; border-radius: 20px;">
+            <!-- Tour Header with Gradient -->
+            <div class="welcome-tour-header"
+                style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color, #764ba2) 100%); padding: 18px 24px; color: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.12);">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div class="welcome-tour-badge"
+                        style="display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.22); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                        <span class="material-icons-outlined" style="font-size:16px;">auto_awesome</span>
+                        <span id="tourStepIndicator">Adım 1 / 8</span>
+                    </div>
+                    <div class="welcome-page-pill" id="tourPageIndicatorPill"
+                        style="display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.25); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid rgba(255,255,255,0.15);">
+                        <span class="material-icons-outlined" style="font-size:14px; color: #6ee7b7;">place</span>
+                        <span id="tourPageIndicatorText">Ekran: Ana Sayfa</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button class="btn btn-ghost btn-icon btn-sm" id="welcomeMinimizeBtn"
+                        title="Sayfayı İncele (Pencereyi Küçült / Büyüt)" style="color: white; border-radius: 50%;">
+                        <span class="material-icons-outlined" id="welcomeMinimizeIcon">unfold_less</span>
+                    </button>
+                    <button class="btn btn-ghost btn-icon btn-sm" id="welcomeSkipBtn" title="Turu Kapat"
+                        style="color: white; border-radius: 50%;">
+                        <span class="material-icons-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slides Container -->
+            <div class="welcome-tour-body" id="welcomeTourSlides"
+                style="padding: 24px 28px; max-height: 62vh; overflow-y: auto;">
+                <!-- Slide 1: Giriş & DenemeLab Nedir -->
+                <div class="welcome-slide active" data-step="1" data-page="dashboard" data-page-title="Ana Sayfa">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined"
+                            style="font-size: 52px; color: var(--primary-color);">rocket_launch</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">DenemeLab'a Hoş Geldiniz! 🎉</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Akıllı sınav analiz, net
+                            hesaplama ve gelişim takip asistanınızla tanışın.</p>
+                    </div>
+
+                    <div class="tour-grid-box"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;">
+                        <div
+                            style="background: var(--bg-tertiary); padding: 13px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center;">
+                            <div
+                                style="width: 38px; height: 38px; border-radius: 10px; background: rgba(124,92,252,0.15); color: var(--primary-color); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-icons-outlined" style="font-size: 20px;">content_cut</span>
+                            </div>
+                            <div>
+                                <h4 style="margin:0; font-size: 13px; font-weight: 600;">Hızlı Soru Kırpma</h4>
+                                <p style="margin:2px 0 0; font-size: 12px; color: var(--text-secondary);">PDF veya
+                                    fotoğraflardan yanlış ve boş soruları saniyeler içinde kesin</p>
+                            </div>
+                        </div>
+                        <div
+                            style="background: var(--bg-tertiary); padding: 13px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center;">
+                            <div
+                                style="width: 38px; height: 38px; border-radius: 10px; background: rgba(16,185,129,0.15); color: var(--color-correct); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-icons-outlined" style="font-size: 20px;">calculate</span>
+                            </div>
+                            <div>
+                                <h4 style="margin:0; font-size: 13px; font-weight: 600;">Ders Ders Net Hesabı</h4>
+                                <p style="margin:2px 0 0; font-size: 12px; color: var(--text-secondary);">4 yanlış 1
+                                    doğru kuralı ile anlık karne ve net hesaplaması</p>
+                            </div>
+                        </div>
+                        <div
+                            style="background: var(--bg-tertiary); padding: 13px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center;">
+                            <div
+                                style="width: 38px; height: 38px; border-radius: 10px; background: rgba(245,158,11,0.15); color: var(--color-review); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-icons-outlined"
+                                    style="font-size: 20px;">replay_circle_filled</span>
+                            </div>
+                            <div>
+                                <h4 style="margin:0; font-size: 13px; font-weight: 600;">Akıllı Tekrar Havuzu</h4>
+                                <p style="margin:2px 0 0; font-size: 12px; color: var(--text-secondary);">Leitner
+                                    aralıklı tekrar yöntemiyle eksikleri kalıcı hafızaya aktarın</p>
+                            </div>
+                        </div>
+                        <div
+                            style="background: var(--bg-tertiary); padding: 13px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center;">
+                            <div
+                                style="width: 38px; height: 38px; border-radius: 10px; background: rgba(59,130,246,0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span class="material-icons-outlined" style="font-size: 20px;">insights</span>
+                            </div>
+                            <div>
+                                <h4 style="margin:0; font-size: 13px; font-weight: 600;">Net Gelişim Grafiği</h4>
+                                <p style="margin:2px 0 0; font-size: 12px; color: var(--text-secondary);">TYT, AYT, KPSS
+                                    vb. sınav bazında net artışınızı izleyin</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="margin-top: 14px; background: rgba(124,92,252,0.08); border: 1px solid rgba(124,92,252,0.25); border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: center;">
+                        <span class="material-icons-outlined"
+                            style="color: var(--primary-color); font-size: 22px;">explore</span>
+                        <p style="margin:0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+                            <strong>Canlı Tur Desteği:</strong> Siz ileri/geri gittikçe arka plandaki sayfalar otomatik
+                            olarak o adıma geçer. Sağ üstteki <strong>Küçült</strong> butonuyla pencereyi kenara alıp
+                            sayfayı dilediğiniz zaman canlı kullanabilirsiniz.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Soru Kesme ve Analiz -->
+                <div class="welcome-slide" data-step="2" data-page="analysis" data-page-title="Soru Kesme ve Analiz">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined"
+                            style="font-size: 52px; color: var(--primary-color);">content_cut</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">1. Dosya Yükleme & Soru Kesme ✂️</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Test fotoğraflarınızı veya
+                            PDF belgelerinizi yükleyin, soruları zahmetsizce kesin.</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-around; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+                            <span class="badge badge-purple" style="padding: 6px 12px; font-size: 12px;">1. Dosya Seç
+                                (PDF / Resim)</span>
+                            <span class="material-icons-outlined"
+                                style="color:var(--text-tertiary); font-size: 18px;">arrow_forward</span>
+                            <span class="badge badge-success" style="padding: 6px 12px; font-size: 12px;">2. Alan Seç
+                                (TYT, AYT...)</span>
+                            <span class="material-icons-outlined"
+                                style="color:var(--text-tertiary); font-size: 18px;">arrow_forward</span>
+                            <span class="badge badge-primary" style="padding: 6px 12px; font-size: 12px;">3. Soruyu Kırp
+                                & Kaydet</span>
+                        </div>
+                        <ul
+                            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                            <li><strong>Önceden Alan Belirleme:</strong> Testin başında sınav türünü (TYT, AYT, LGS,
+                                KPSS vb.) seçersiniz; her soruda tekrar sınav türü sormaz.</li>
+                            <li><strong>Çok Sayfalı PDF & Döndürme:</strong> PDF sayfaları arasında oklarla rahatça
+                                geçiş yapabilir, yan duran sayfaları 90° çevirebilirsiniz.</li>
+                            <li><strong>Gelişmiş Kırpma Araçları:</strong> Klasik dikdörtgen seçim veya serbest kement
+                                (lasso) aracıyla karmaşık soruları tam sınırından kesin.</li>
+                            <li><strong>Etiketleme & Hata Nedeni:</strong> Ders, MEB/ÖSYM konusu, hata sebebi (bilgi
+                                eksikliği, dikkat hatası vb.) ve çözüm notunuzu ekleyin.</li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm tour-peek-btn tour-hide-when-minimized"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span> Bu Ekranı Canlı
+                        İncele (Rehberi Küçült)
+                    </button>
+                </div>
+
+                <!-- Slide 3: Yapay Zeka Sınav Analizi -->
+                <div class="welcome-slide" data-step="3" data-page="ai-analysis" data-page-title="Yapay Zeka Analizi">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined" style="font-size: 52px; color: #8b5cf6;">psychology</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">2. Yapay Zeka Destekli Analiz 🤖</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Sorularınızı Google Gemini
+                            yapay zekasıyla otomatik tespit edin ve çözdürün.</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <span class="material-icons-outlined"
+                                    style="color: #8b5cf6; font-size: 22px; flex-shrink: 0; margin-top: 2px;">center_focus_strong</span>
+                                <div>
+                                    <h4 style="margin:0; font-size: 13.5px;">Otomatik Soru Tespiti</h4>
+                                    <p style="margin:2px 0 0; font-size: 12.5px; color: var(--text-secondary);">Test
+                                        sayfasındaki soruları yapay zeka saniyeler içinde otomatik olarak algılar ve
+                                        kırpar.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <span class="material-icons-outlined"
+                                    style="color: #10b981; font-size: 22px; flex-shrink: 0; margin-top: 2px;">menu_book</span>
+                                <div>
+                                    <h4 style="margin:0; font-size: 13.5px;">Adım Adım Çözüm & İpuçları</h4>
+                                    <p style="margin:2px 0 0; font-size: 12.5px; color: var(--text-secondary);">Sorunun
+                                        doğru çözüm adımlarını, takıldığınız noktayı ve formülleri açıklar.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <span class="material-icons-outlined"
+                                    style="color: #f59e0b; font-size: 22px; flex-shrink: 0; margin-top: 2px;">lightbulb</span>
+                                <div>
+                                    <h4 style="margin:0; font-size: 13.5px;">Müfredat Konusu & Hata Tespiti</h4>
+                                    <p style="margin:2px 0 0; font-size: 12.5px; color: var(--text-secondary);">Sorunun
+                                        MEB/ÖSYM konusunu ve sorudaki muhtemel hata nedenini önerir.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="margin-top: 14px; padding: 10px 12px; background: rgba(139,92,246,0.1); border-left: 3px solid #8b5cf6; border-radius: 6px;">
+                            <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">
+                                💡 <strong>Nasıl Açılır?</strong> Ayarlar menüsünden ücretsiz Gemini API anahtarınızı
+                                girerek Yapay Zeka Analizini hemen aktif edebilirsiniz.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm tour-peek-btn tour-hide-when-minimized"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span> Bu Ekranı Canlı
+                        İncele (Rehberi Küçült)
+                    </button>
+                </div>
+
+                <!-- Slide 4: Analiz Geçmişi & Ders Ders Doğru Ekleme -->
+                <div class="welcome-slide" data-step="4" data-page="results"
+                    data-page-title="Analiz Geçmişi ve Sonuçlar">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined"
+                            style="font-size: 52px; color: var(--color-correct);">playlist_add_check</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">3. Analiz Geçmişi & Net Karnesi 📝</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Yalnızca yanlış soruları
+                            kesseniz dahi tam deneme karnesi oluşturabilirsiniz!</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+                                <span style="font-weight: 600; font-size: 13px;">Türkçe</span>
+                                <span style="font-size: 12px; color: var(--text-secondary);">4 Yanlış, 1 Boş</span>
+                                <span class="badge badge-success" style="font-size: 11px;">+ 35 Doğru</span>
+                                <strong style="color: var(--primary-color); font-size: 13px;">34.00 Net</strong>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+                                <span style="font-weight: 600; font-size: 13px;">Matematik</span>
+                                <span style="font-size: 12px; color: var(--text-secondary);">3 Yanlış, 2 Boş</span>
+                                <span class="badge badge-success" style="font-size: 11px;">+ 35 Doğru</span>
+                                <strong style="color: var(--primary-color); font-size: 13px;">34.25 Net</strong>
+                            </div>
+                        </div>
+                        <ul
+                            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                            <li><strong>"Ders Ders Doğru Ekle":</strong> Sonuçlar ekranında bu butona tıklayarak her
+                                dersteki doğru sayılarınızı girin; 4 yanlış 1 doğru kuralına göre anında tam karne ve
+                                netleriniz hesaplanır.</li>
+                            <li><strong>Geçmiş Sınav Kartları:</strong> Yapılan tüm testleri alan, ders ve tarihe göre
+                                filtreleyin.</li>
+                            <li><strong>Soru Detayları:</strong> Kırptığınız soruları ve hata sebeplerini dilediğiniz
+                                zaman yeniden açıp inceleyin.</li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm tour-peek-btn tour-hide-when-minimized"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span> Bu Ekranı Canlı
+                        İncele (Rehberi Küçült)
+                    </button>
+                </div>
+
+                <!-- Slide 5: Canlı Net Takip Grafiği -->
+                <div class="welcome-slide" data-step="5" data-page="dashboard"
+                    data-page-title="Canlı Net Takip Grafiği">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined" style="font-size: 52px; color: #3b82f6;">insights</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">4. Canlı Net Takip Grafiği 📈</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Ana sayfadaki dinamik
+                            grafikle sınavlar arasındaki net artışınızı adım adım izleyin.</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                            <span class="badge"
+                                style="background: rgba(99,102,241,0.2); color: #6366f1; font-size: 12px;">🎯 Alan: TYT
+                                / AYT / LGS...</span>
+                            <span class="badge"
+                                style="background: rgba(16,185,129,0.2); color: var(--color-correct); font-size: 12px;">📚
+                                Ders: Matematik, Türkçe...</span>
+                            <span class="badge"
+                                style="background: rgba(245,158,11,0.2); color: var(--color-review); font-size: 12px;">⏱️
+                                Son 5, Son 10 veya Tümü</span>
+                        </div>
+                        <ul
+                            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                            <li><strong>Alan Filtreleme:</strong> Yalnızca TYT veya AYT netlerinizi izleyerek hedef
+                                odaklı kalın.</li>
+                            <li><strong>Ders Bazında Net Gelişimi:</strong> Örneğin sadece Matematik netlerinizin
+                                denemeler arasındaki yükseliş seyrini görün.</li>
+                            <li><strong>Canlı Sayaçlar:</strong> Ana sayfada toplam çözülen test, kesilen soru ve başarı
+                                yüzdesi her an güncel kalır.</li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm tour-peek-btn tour-hide-when-minimized"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span> Bu Ekranı Canlı
+                        İncele (Rehberi Küçült)
+                    </button>
+                </div>
+
+                <!-- Slide 6: Çalışma Raporu -->
+                <div class="welcome-slide" data-step="6" data-page="report" data-page-title="Çalışma Raporu">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined" style="font-size: 52px; color: #ec4899;">analytics</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">5. Çalışma Raporu & Zayıf Konular 🎯</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Hangi derste ve hangi
+                            konuda eksikleriniz olduğunu nokta atışı tespit edin.</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <span class="material-icons-outlined"
+                                    style="color: #ef4444; font-size: 22px; flex-shrink: 0; margin-top: 2px;">warning_amber</span>
+                                <div>
+                                    <h4 style="margin:0; font-size: 13.5px;">Kritik Zayıf Konu Tespiti</h4>
+                                    <p style="margin:2px 0 0; font-size: 12.5px; color: var(--text-secondary);">En çok
+                                        hata yaptığınız konular otomatik sıralanır; hangi konuya öncelik vermeniz
+                                        gerektiğini gösterir.</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <span class="material-icons-outlined"
+                                    style="color: #f59e0b; font-size: 22px; flex-shrink: 0; margin-top: 2px;">pie_chart</span>
+                                <div>
+                                    <h4 style="margin:0; font-size: 13.5px;">Hata Nedenleri Dağılımı</h4>
+                                    <p style="margin:2px 0 0; font-size: 12.5px; color: var(--text-secondary);">
+                                        Hatalarınız bilgi eksikliğinden mi, dikkat/işlem hatasından mı, yoksa süre
+                                        yetersizliğinden mi kaynaklanıyor?</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                <span class="material-icons-outlined"
+                                    style="color: #10b981; font-size: 22px; flex-shrink: 0; margin-top: 2px;">psychology_alt</span>
+                                <div>
+                                    <h4 style="margin:0; font-size: 13.5px;">Kişiselleştirilmiş Öneriler & PDF Aktarımı
+                                    </h4>
+                                    <p style="margin:2px 0 0; font-size: 12.5px; color: var(--text-secondary);">
+                                        Eksiklerinize göre akıllı çalışma tavsiyeleri alın, raporunuzu tek tıkla
+                                        yazdırın veya PDF olarak kaydedin.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm tour-peek-btn tour-hide-when-minimized"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span> Bu Ekranı Canlı
+                        İncele (Rehberi Küçült)
+                    </button>
+                </div>
+
+                <!-- Slide 7: Akıllı Tekrar Havuzu -->
+                <div class="welcome-slide" data-step="7" data-page="review" data-page-title="Tekrar Havuzu">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined"
+                            style="font-size: 52px; color: var(--color-review);">replay_circle_filled</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">6. Akıllı Tekrar Havuzu & Hafıza Kutusu 🧠</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Leitner aralıklı tekrar
+                            yöntemiyle yanlışlarınızı kalıcı hafızaya kazıyın.</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;">
+                            <span class="badge"
+                                style="background: rgba(124,92,252,0.15); color: var(--primary-color); font-size: 11.5px; padding: 4px 8px;">Kutu
+                                1 (1. Gün)</span>
+                            <span style="color:var(--text-tertiary);">➔</span>
+                            <span class="badge"
+                                style="background: rgba(59,130,246,0.15); color: #3b82f6; font-size: 11.5px; padding: 4px 8px;">Kutu
+                                2 (3. Gün)</span>
+                            <span style="color:var(--text-tertiary);">➔</span>
+                            <span class="badge"
+                                style="background: rgba(245,158,11,0.15); color: #f59e0b; font-size: 11.5px; padding: 4px 8px;">Kutu
+                                3 (7. Gün)</span>
+                            <span style="color:var(--text-tertiary);">➔</span>
+                            <span class="badge"
+                                style="background: rgba(16,185,129,0.15); color: #10b981; font-size: 11.5px; padding: 4px 8px;">Kutu
+                                4-5 (Kalıcı)</span>
+                        </div>
+                        <ul
+                            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                            <li><strong>Otomatik Zamanlama:</strong> Kestiğiniz yanlış ve boş sorular aralıklarla "Bugün
+                                Tekrar Edilecekler" listesine düşer.</li>
+                            <li><strong>"Tekrar Testini Başlat":</strong> Soruları tam ekran test modunda tekrar çözün.
+                                Doğru bildikleriniz üst kutuya geçer, bilemedikleriniz başa döner.</li>
+                            <li><strong>Sıfır Eksik:</strong> Sınav gününe kadar takıldığınız hiçbir soru unutulmaz!
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary btn-sm tour-peek-btn tour-hide-when-minimized"
+                        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span> Bu Ekranı Canlı
+                        İncele (Rehberi Küçült)
+                    </button>
+                </div>
+
+                <!-- Slide 8: Ayarlar & Yerel Depolama -->
+                <div class="welcome-slide" data-step="8" data-page="settings" data-page-title="Ayarlar ve Depolama">
+                    <div style="text-align: center; margin-bottom: 18px;">
+                        <span class="material-icons-outlined"
+                            style="font-size: 52px; color: var(--primary-color);">folder_special</span>
+                        <h2 style="margin: 8px 0; font-size: 23px;">7. Ayarlar & Güvenli Yerel Depolama 💾</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">Verileriniz buluta gitmez;
+                            bilgisayarınızdaki "Deneme Lab" klasöründe saklanır.</p>
+                    </div>
+
+                    <div class="tour-detail-box"
+                        style="background: var(--bg-tertiary); padding: 16px; border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                            <span class="material-icons-outlined"
+                                style="font-size: 32px; color: var(--primary-color);">folder</span>
+                            <div>
+                                <h4 style="margin: 0; font-size: 14px;">Varsayılan Klasör: "Deneme Lab"</h4>
+                                <p style="margin: 2px 0 0; font-size: 12px; color: var(--text-secondary);">Tüm sınav
+                                    analizleri ve net soru resimleri bu klasörde yerel olarak saklanır.</p>
+                            </div>
+                        </div>
+                        <ul
+                            style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+                            <li><strong>Net Hesaplama Kuralı:</strong> 4 Yanlış 1 Doğru (0.25), 3 Yanlış 1 Doğru (0.33)
+                                veya özel katsayınızı belirleyin.</li>
+                            <li><strong>Ders & Konu Yönetimi:</strong> Kendi özel derslerinizi ve alt konularınızı
+                                dilediğiniz gibi ekleyip düzenleyin.</li>
+                            <li><strong>Veri Güvenliği:</strong> Tek tıkla yedek alın veya önceki yedeklerinizi geri
+                                yükleyin.</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" id="welcomeSelectFolderBtn"
+                            style="padding: 12px 24px; font-weight: 600; width: 100%; border-radius: 10px;">
+                            <span class="material-icons-outlined">folder_open</span> "Deneme Lab" Klasörünü Onayla
+                            ve Başla
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tour Footer Controls -->
+            <div class="welcome-tour-footer"
+                style="padding: 16px 28px; background: var(--bg-tertiary); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <div class="tour-dots" id="welcomeTourDots" style="display: flex; gap: 8px;">
+                    <span class="tour-dot active" data-step="1"></span>
+                    <span class="tour-dot" data-step="2"></span>
+                    <span class="tour-dot" data-step="3"></span>
+                    <span class="tour-dot" data-step="4"></span>
+                    <span class="tour-dot" data-step="5"></span>
+                    <span class="tour-dot" data-step="6"></span>
+                    <span class="tour-dot" data-step="7"></span>
+                    <span class="tour-dot" data-step="8"></span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-ghost btn-sm" id="welcomePrevBtn" style="display: none;">
+                        <span class="material-icons-outlined">arrow_back</span> Geri
+                    </button>
+                    <button class="btn btn-primary btn-sm" id="welcomeNextBtn">
+                        İleri <span class="material-icons-outlined">arrow_forward</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" id="welcomeFinishBtn" style="display: none;">
+                        <span class="material-icons-outlined">check_circle</span> Tamamla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CONFIRM MODAL ========== -->
+
+    <!-- ========== QUESTION DETAIL MODAL ========== -->
+    <div class="modal-overlay hidden" id="questionDetailModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="questionDetailTitle">Soru Detayı</h3>
+                <button class="btn btn-ghost" id="closeQuestionDetail">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+            <div class="question-detail-body" id="questionDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- ========== QUESTION ZOOM MODAL ========== -->
+    <div class="modal-overlay hidden" id="questionZoomModal"
+        onclick="if(event.target===this) manualAnalyzer.closeZoomModal()">
+        <div class="question-zoom-content">
+            <button class="question-zoom-close" id="closeQuestionZoom" onclick="manualAnalyzer.closeZoomModal()"
+                title="Kapat (Esc)">
+                <span class="material-icons-outlined">close</span>
+            </button>
+            <button class="question-zoom-nav-btn prev" id="questionZoomPrevBtn"
+                onclick="manualAnalyzer.navigateZoomQuestion(-1)" title="Önceki Soru (Sol Ok)">
+                <span class="material-icons-outlined">chevron_left</span>
+            </button>
+            <div class="question-zoom-header">
+                <div class="question-zoom-title" id="questionZoomTitle">Soru 1</div>
+                <div class="question-zoom-counter" id="questionZoomCounter"></div>
+            </div>
+            <div class="question-zoom-img-wrapper">
+                <img id="questionZoomImage" src="" alt="Soru Görseli Büyük" onclick="manualAnalyzer.closeZoomModal()"
+                    title="Kapatmak için tıkla (Esc)">
+            </div>
+            <button class="question-zoom-nav-btn next" id="questionZoomNextBtn"
+                onclick="manualAnalyzer.navigateZoomQuestion(1)" title="Sonraki Soru (Sağ Ok)">
+                <span class="material-icons-outlined">chevron_right</span>
+            </button>
+            <div class="question-zoom-footer">
+                <span class="zoom-hint-text">💡 Kapatmak için <b>Esc</b> veya görsele tıklayın. Sorular arası geçiş için
+                    <b>← / →</b> tuşlarını kullanabilirsiniz.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts & Modules -->
+    <script src="file-storage.js?v=13"></script>
+    <script src="canvas-tools.js?v=20"></script>
+    <script src="review-pool.js?v=20"></script>
+    <script src="manual-analysis.js?v=21"></script>
+    <script src="analyzer.js?v=13"></script>
+    <script src="app.js?v=21"></script>
+</body>
+
+</html>

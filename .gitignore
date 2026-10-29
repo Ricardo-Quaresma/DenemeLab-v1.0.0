@@ -1,0 +1,14 @@
+# Antigravity / Ajan Çalışma ve Test Dosyaları
+scratch/
+.vscode/
+
+# Windows Sistem Dosyaları
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.tmp
+*.log
+
+# İsteğe Bağlı: Büyük veya Kişisel Yedek Dosyaları
+# app/DenemeLab_Verileri/backups/*.zip
+

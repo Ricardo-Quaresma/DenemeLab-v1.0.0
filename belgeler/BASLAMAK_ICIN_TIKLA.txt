@@ -1,0 +1,80 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║              🎓 TestAI Uygulamasına Hoş Geldiniz!            ║
+║          Akıllı Sınav Analiz Platformu - v1.0.0              ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🚀 HIZLI BAŞLANGIÇ (3 ADIM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ╔════════════════════════════════════════════════════════╗
+  ║                                                        ║
+  ║   1️⃣  "TestAI_Baslat.bat" dosyasına ÇİFT TIKLA       ║
+  ║                                                        ║
+  ║   2️⃣  Tarayıcı otomatik açılır                       ║
+  ║                                                        ║
+  ║   3️⃣  İlk kullanımda:                                 ║
+  ║       Ayarlar → Dosya Depolama → Klasör Seç          ║
+  ║       → "TestAI_Verileri" klasörünü seçin            ║
+  ║                                                        ║
+  ║   ✅  Hazırsınız!                                     ║
+  ║                                                        ║
+  ╚════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📁 DOSYA YAPISI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 BAŞLATMA:
+   ✓ TestAI_Baslat.bat               ← BUNA TIKLA!
+
+📌 KLASÖRLER:
+   ✓ TestAI_Verileri/                ← Verileriniz buraya
+
+📌 DOKÜMANTASYON:
+   ✓ BASLAMAK_ICIN_TIKLA.txt         ← Bu dosya
+   ✓ NASIL_KULLANILIR.txt            ← Detaylı rehber
+   ✓ TestAI_Hakkinda.html            ← Uygulama bilgileri
+
+📌 İSTEĞE BAĞLI:
+   ✓ Masaustune_Kisayol_Olustur.bat ← Masaüstü kısayolu
+
+📌 UYGULAMA:
+   ✓ index.html, app.js, styles.css...
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💡 ÖNEMLİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Server penceresi AÇIK KALMALI
+✅ Adres: http://localhost:8000
+✅ İlk kullanımda klasör seç
+✅ Chrome/Edge/Brave kullan
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔧 SORUN GİDERME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Python bulunamadı
+   → Microsoft Store'dan Python yükle
+
+❌ Tarayıcı açılmadı
+   → Manuel aç: http://localhost:8000
+
+❌ Klasör seçimi kayboldu
+   → Tekrar seç, izin ver
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+          🎉 İYİ ÇALIŞMALAR! 🎉
+
+          Detaylar: NASIL_KULLANILIR.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

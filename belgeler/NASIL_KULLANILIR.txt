@@ -1,0 +1,98 @@
+═══════════════════════════════════════════════════════════════
+  TestAI - Kullanım Kılavuzu
+═══════════════════════════════════════════════════════════════
+
+🚀 HIZLI BAŞLANGIÇ - 3 ADIM
+
+1️⃣  "TestAI_Baslat.bat" dosyasına ÇİFT TIKLAYIN
+    → Server otomatik başlar
+    → Tarayıcı otomatik açılır
+    → ✅ Hazırsınız!
+
+2️⃣  İlk kullanımda:
+    → Ayarlar → Dosya Depolama → "Klasör Seç"
+    → "TestAI_Verileri" klasörünü seçin
+
+3️⃣  Test fotoğraflarınızı yükleyin ve analiz edin!
+
+═══════════════════════════════════════════════════════════════
+
+📁 DOSYALAR VE KLASÖRLER
+
+├─ TestAI_Baslat.bat          → BUNA TIKLA! (Uygulamayı başlatır)
+├─ Masaustune_Kisayol_Olustur.bat  → Masaüstü kısayolu oluşturur
+├─ TestAI_Verileri/           → Verileriniz buraya kaydedilir
+├─ index.html                 → Ana uygulama dosyası
+├─ app.js                     → Uygulama mantığı
+├─ manual-analysis.js         → Manuel analiz modülü
+├─ review-pool.js             → Tekrar havuzu modülü
+├─ file-storage.js            → Dosya depolama yöneticisi
+├─ styles.css                 → Görsel stiller
+└─ NASIL_KULLANILIR.txt       → Bu dosya
+
+═══════════════════════════════════════════════════════════════
+
+⚙️ İSTEĞE BAĞLI KURULUM
+
+🔗 Masaüstü Kısayolu:
+   → "Masaustune_Kisayol_Olustur.bat" dosyasına çift tıklayın
+   → Masaüstünüze "TestAI" kısayolu eklenir
+   → Artık oradan tek tıkla başlatabilirsiniz
+
+═══════════════════════════════════════════════════════════════
+
+💡 ÖNEMLİ NOTLAR
+
+✓ Server penceresi AÇIK KALMALI
+  → Kapatırsanız uygulama çalışmaz
+  → Minimize edebilirsiniz (alt çubuğa iner)
+
+✓ Tarayıcı Adresi
+  → http://localhost:8000
+  → Bu adresi kaydedin (yer imine ekleyin)
+
+✓ Klasör Seçimi (İlk Kullanım)
+  → Ayarlar → Dosya Depolama → "Klasör Seç"
+  → "TestAI_Verileri" klasörünü seçin
+  → Böylece verileriniz kaybolmaz
+
+✓ Uygulamayı Kapatma
+  → Server penceresini kapatın
+  → Veya pencerede Ctrl+C basın
+
+═══════════════════════════════════════════════════════════════
+
+🔧 SORUN GİDERME
+
+❌ "Python bulunamadı" hatası
+   → Microsoft Store'dan Python yükleyin
+   → Veya https://www.python.org adresinden indirin
+
+❌ "Port kullanımda" hatası
+   → Başka bir TestAI penceresi açık olabilir
+   → Tüm CMD/PowerShell pencerelerini kapatıp tekrar deneyin
+
+❌ Tarayıcı açılmıyor
+   → Manuel olarak şu adresi açın: http://localhost:8000
+
+❌ "Klasör Seç" butonu çalışmıyor
+   → Chrome, Edge veya Brave kullandığınızdan emin olun
+   → Firefox/Safari desteklemiyor
+
+═══════════════════════════════════════════════════════════════
+
+📞 EK YARDIM DOSYALARI
+
+→ BRAVE_AYARLARI.md        → Brave tarayıcı ayarları
+→ README_SERVER.md         → Sunucu detaylı bilgi
+→ TEST_API.html            → API test sayfası
+
+═══════════════════════════════════════════════════════════════
+
+🎉 İYİ ÇALIŞMALAR!
+
+TestAI ile sınav analizlerinizi kolayca yapabilir,
+çalışma raporlarınızı oluşturabilir ve hedeflerinize
+daha hızlı ulaşabilirsiniz.
+
+═══════════════════════════════════════════════════════════════

@@ -1,0 +1,164 @@
+═══════════════════════════════════════════════════════════════
+  Google Gemini API Kullanımı ve Sorun Giderme
+═══════════════════════════════════════════════════════════════
+
+🎯 ÖNEMLİ GÜNCELLEME:
+
+Varsayılan model değiştirildi:
+❌ gemini-3.8-flash (yanlış)
+✅ gemini-1.5-flash (doğru)
+
+Ayarlarınız otomatik güncellenecek.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔑 API KEY ALMA (ÜCRETSİZ)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Şu linke git: https://aistudio.google.com/apikey
+
+2. Google hesabınla giriş yap
+
+3. "Create API Key" butonuna tıkla
+
+4. Yeni bir Google Cloud projesi seç veya oluştur
+
+5. API Key'i kopyala
+
+6. TestAI → Ayarlar → Yapay Zeka Ayarları → Yapıştır → Kaydet
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚠️ 503 SERVICE UNAVAILABLE HATASI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HATA:
+"This model is currently experiencing high demand.
+Spikes in demand are usually temporary."
+
+SEBEP:
+Google Gemini servisleri çok yoğun. Çok fazla kullanıcı aynı anda
+istek gönderiyor.
+
+ÇÖZÜM:
+
+✅ Seçenek 1: Bekle ve Tekrar Dene (Önerilen)
+   → 5-10 dakika bekle
+   → Tekrar analiz başlat
+   → Uygulama otomatik 3 kez dener (5-11-17 sn aralıkla)
+
+✅ Seçenek 2: Farklı Model Dene
+   → Ayarlar → Yapay Zeka Ayarları → AI Modeli
+   → "Modelleri Yenile" butonuna tıkla
+   → Farklı bir model seç (örn: gemini-1.5-pro)
+
+✅ Seçenek 3: Farklı Saatte Dene
+   → Yoğun saatler: 09:00-18:00 (iş saatleri)
+   → Sakin saatler: 22:00-08:00 (gece)
+   → Hafta sonları genelde daha az yoğun
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 ÖNERİLEN MODELLER (2024)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. gemini-1.5-flash (Varsayılan)
+   ✓ En hızlı
+   ✓ Ücretsiz kotası bol
+   ✓ Test analizi için ideal
+   ✗ Bazen yoğun olabilir
+
+2. gemini-1.5-flash-8b
+   ✓ Daha hafif
+   ✓ Daha az yoğun
+   ✓ Hızlı
+   ✗ Biraz daha az doğru
+
+3. gemini-1.5-pro
+   ✓ En doğru
+   ✓ Daha az yoğun (ücretli kullanıcılar öncelik)
+   ✗ Daha yavaş
+   ✗ Ücretsiz kotası az
+
+4. gemini-2.0-flash-exp (Deneysel)
+   ✓ En yeni
+   ✓ Çok hızlı
+   ✗ Deneysel (kararsız olabilir)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💰 ÜCRETSİZ KOTA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Google Gemini API ücretsiz kotası:
+
+gemini-1.5-flash:
+• 15 istek / dakika
+• 1,500 istek / gün
+• ~50 test analizi / gün
+
+gemini-1.5-pro:
+• 2 istek / dakika
+• 50 istek / gün
+• ~15 test analizi / gün
+
+ÖNEMLİ:
+• Kota her gece sıfırlanır (UTC 00:00)
+• Ücretsiz kullanım için kredi kartı gerekmez
+• Kotayı aşarsan 429 hatası alırsın
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🔧 DİĞER HATA MESAJLARI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 400 Bad Request / Invalid API Key
+   → API Key yanlış
+   → Ayarlar → API Key kontrol et
+   → Tekrar kaydet
+
+❌ 403 Forbidden
+   → API Key yetkisi yok
+   → Google Cloud'da API aktif mi kontrol et
+   → Yeni API Key al
+
+❌ 429 Too Many Requests
+   → Günlük kotanı aştın
+   → Yarın tekrar dene
+   → Veya ücretli plana geç
+
+❌ 404 Model Not Found
+   → Model ismi yanlış
+   → Ayarlar → Modelleri Yenile
+   → Geçerli model seç
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💡 İPUÇLARI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Az sayfalı PDF'ler yükle (5-10 sayfa ideal)
+✓ Yoğun saatlerde manuel analiz kullan
+✓ Önemli testler için gemini-1.5-pro kullan
+✓ Test için gemini-1.5-flash yeterli
+✓ API Key'i kimseyle paylaşma
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📞 YARDIM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Google Gemini API Dokümantasyon:
+https://ai.google.dev/docs
+
+API Key Yönetimi:
+https://makersuite.google.com/app/apikey
+
+Google Cloud Console:
+https://console.cloud.google.com/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Son Güncelleme: 2024
+TestAI v1.0.0
