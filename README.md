@@ -1,4 +1,4 @@
-# 🔬 DenemeLab — Sınav ve Deneme Analizi
+# 🔬 DenemeLab — Yapay Zeka Destekli Sınav ve Deneme Analizi
 
 > [!WARNING]
 > **Önemli Not:** Uygulama içerisindeki **Yapay Zeka Destekli Analiz** sistemi şu anda deneysel aşamada olup düzgün çalışmamaktadır / geliştirilme aşamasındadır. Deneme ve sınav analizlerinizi, soru kırpma ve net takiplerinizi sorunsuz gerçekleştirmek için lütfen **Manuel Analiz** modunu kullanınız.
