@@ -9,6 +9,8 @@ $RECYCLE.BIN/
 *.tmp
 *.log
 
-# İsteğe Bağlı: Büyük veya Kişisel Yedek Dosyaları
-# app/DenemeLab_Verileri/backups/*.zip
-
+# Deneme_Lab Veri Klasörü (Kişisel analiz ve yedekleri hariç tut, klasör yapısını koru)
+app/Deneme_Lab/analyses/*
+app/Deneme_Lab/backups/*
+app/Deneme_Lab/originals/*
+!app/Deneme_Lab/**/.gitkeep

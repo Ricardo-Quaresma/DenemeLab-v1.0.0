@@ -1,0 +1,44 @@
+═══════════════════════════════════════════════════════════════
+  TestAI - Veri Depolama Klasörü
+═══════════════════════════════════════════════════════════════
+
+Bu klasör, TestAI uygulamanız için veri saklama amacıyla oluşturulmuştur.
+
+📁 KULLANIM:
+
+1. TestAI uygulamasını açın
+2. Ayarlar → Dosya Depolama → "Klasör Seç" butonuna tıklayın
+3. Bu klasörü (TestAI_Verileri) seçin
+4. Tüm analizler, görseller ve yedekler buraya kaydedilecek
+
+═══════════════════════════════════════════════════════════════
+
+📂 OTOMATIK OLUŞTURULACAK YAPILAR:
+
+TestAI_Verileri/
+  ├── originals/           → Orijinal test görselleri (PNG - Kayıpsız)
+  ├── analyses/            → İşlenmiş analiz dosyaları
+  ├── backups/             → Otomatik yedekler
+  └── thumbnails/          → Küçük önizleme görselleri (isteğe bağlı)
+
+═══════════════════════════════════════════════════════════════
+
+✨ AVANTAJLAR:
+
+✓ PNG formatında kayıpsız görsel kalitesi
+✓ Tarayıcı depolama sınırı yok
+✓ Dosyalarınızı istediğiniz zaman yedekleyebilirsiniz
+✓ Klasörü başka bir yere taşıyabilirsiniz
+✓ Verilere kolayca erişebilirsiniz
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ UYARILAR:
+
+• Bu klasörü silmeyin veya taşımayın
+• İçindeki dosyaları manuel olarak değiştirmeyin
+• Düzenli yedek alın (otomatik yedekleme aktif)
+
+═══════════════════════════════════════════════════════════════
+
+Bu dosyayı silmek sorun yaratmaz. Sadece bilgilendirme amaçlıdır.
