@@ -12,7 +12,16 @@ DenemeLab; TYT, AYT, LGS, ALES, KPSS ve MSÜ sınavlarına hazırlanan öğrenci
 
 ### 🍎 Mac (macOS) Kullanıcıları İçin:
 * **`DenemeLab_Mac_Baslat.command`** dosyasına çift tıklayın. Tarayıcınızda otomatik olarak açılacaktır.
-* *(Alternatif olarak `app/index.html` dosyasına çift tıklayarak da doğrudan Safari veya Chrome ile açabilirsiniz)*
+
+> [!NOTE]
+> **Mac'te "Erişim ayrıcalıklarına sahip değilsiniz" uyarısı alırsanız:**
+> macOS güvenlik kuralları gereği indirilen betiklere ilk seferde çalıştırma izni verilmesi gerekir:
+> 1. Mac'inizde **Terminal** uygulamasını açın.
+> 2. `chmod +x ` yazın (sonunda bir boşluk bırakın, Enter'a basmayın).
+> 3. **`DenemeLab_Mac_Baslat.command`** dosyasını farenizle sürükleyip Terminal penceresinin içine bırakın ve **Enter**'a basın.
+> 4. Artık dosyaya çift tıklayarak sorunsuz başlatabilirsiniz!
+>
+> *(İzinle uğraşmak istemiyorsanız doğrudan `app/index.html` dosyasına çift tıklayarak da tarayıcınızda anında açabilirsiniz).*
 
 ---
 
